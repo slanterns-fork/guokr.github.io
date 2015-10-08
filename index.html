@@ -102,67 +102,9 @@
 <p>决策树（Decision Tree）是机器学习领域中一种基本的分类与回归方法，在分类的问题中，表示基于特征对实例进行分类的过程。粗浅地看，可以认为是一组特定 if-else 规则的集合，也可以认为是定义在特征空间和类空间上的条件概率分布。由于算法既简单易懂，又十分高效，所以在实际应用中非常广泛。本文主要介绍决策树算法在果壳网反垃圾系统中的应用与实践心得。</p>
 <h2>背景问题</h2>
 <p>果壳网社区项目是目前果壳的主要流量来源，包含有果壳小组，果壳问答，知性社区，MOOC 社区等。社区内部有大量的垃圾用户，频繁发帖，给运营人员的工作带来了很大的压力，也影响了社区正常的环境。</p>
-<p><img alt="test" src="../images/algo1.png"/></p>
-<p>如何区分正常用户和 spammer 可以看成是一个分类问题，准确地说，其实是一个二分类问题。常用的分类机器学习算法包括但不限于SVM，逻辑回归，朴素贝叶斯等等。由于这些分类算法都属于有监督的机器学习，因此必须要使用一些已经标注好的样本进行训练。毫无疑问，现有的用户信息都在 log 中，我们究竟要取其中的哪些作为用户的 feature 来训练，以及是否还需要人工标注，都是接下来需要面临的问题。</p>
-<p>不妨假设我们得到的训练样本集合：
-</p>
-<div class="math">$$D=(x_1,y_1), (x_2,y_2),…,(x_N,y_N)$$ ...</div><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
-    var align = "center",
-        indent = "0em",
-        linebreak = "false";
-
-    if (false) {
-        align = (screen.width < 768) ? "left" : align;
-        indent = (screen.width < 768) ? "0em" : indent;
-        linebreak = (screen.width < 768) ? 'true' : linebreak;
-    }
-
-    var mathjaxscript = document.createElement('script');
-    var location_protocol = (false) ? 'https' : document.location.protocol;
-    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
-    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
-    mathjaxscript.type = 'text/javascript';
-    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
-        "MathJax.Hub.Config({" +
-        "    config: ['MMLorHTML.js']," +
-        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
-        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
-        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
-        "    displayAlign: '"+ align +"'," +
-        "    displayIndent: '"+ indent +"'," +
-        "    showMathMenu: true," +
-        "    messageStyle: 'normal'," +
-        "    tex2jax: { " +
-        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
-        "        displayMath: [ ['$$','$$'] ]," +
-        "        processEscapes: true," +
-        "        preview: 'TeX'," +
-        "    }, " +
-        "    'HTML-CSS': { " +
-        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
-        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
-        "    }, " +
-        "}); " +
-        "if ('default' !== 'default') {" +
-            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
-                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
-                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
-                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
-                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
-                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
-            "});" +
-        "}";
-    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
-}
-</script>
+<p><img alt="test" src="../images/algo1.png" /></p>
+<p>如何区分正常用户和 spammer 可以看成是一个分类问题，准确地说，其实是一个二分类问题。常用的分类机器学习算法包括但不限于SVM，逻辑回归，朴素贝叶斯等等。由于这些分类算法都属于有监督的机器学习，因此必须要使用一些已经标注好的样本进行训练。毫无疑问，现有的用户信息都在 log 中，我们究竟要取其中的哪些作为用户的 feature 来训练，以及是否还需要人工标注，都是接下来需要面临的特征工程问题。</p>
+<p>对 raw data 的清洗和挖掘是整个机器学习系统的第一个关键性步骤 ...</p>
                                 <p class="readmore">
                                     <a class="btn btn-small btn-info" href="/decition-tree-in-anti-spam.html">Read more...</a>
                                 </p>
