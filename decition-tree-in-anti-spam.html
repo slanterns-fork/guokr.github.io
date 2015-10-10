@@ -168,8 +168,8 @@
 <div class="math">$$H_A(D)=-\sum_{i=1}^{n}\frac{|D_i|}{|D|}log\frac{|D_i|}{|D|}，n 是特征 A 取值的个数$$</div>
 <p>C4.5决策树学习流程如下：</p>
 <hr />
-<p><strong>输入</strong>: 训练数据集：<span class="math">\(D\)</span>；特征集合：<span class="math">\(F\)</span>；阈值：<span class="math">\(\varepsilon\)</span></p>
-<p><strong>输出</strong>：一棵完整的决策树模型：<span class="math">\(T\)</span></p>
+<p><strong>输入</strong>: 训练数据集：<span class="math">\(D\)</span>；特征集合：<span class="math">\(F\)</span>；阈值：<span class="math">\(\varepsilon\)</span>；</p>
+<p><strong>输出</strong>：一棵完整的决策树模型：<span class="math">\(T\)</span>；</p>
 <p><strong>步骤</strong>：</p>
 <ol>
 <li>如果 <span class="math">\(D\)</span> 中所有的样本都属于同一个类 <span class="math">\(C_k\)</span>，则将 <span class="math">\(T\)</span> 置为单节点树，以及将 <span class="math">\(C_k\)</span> 作为该结点的类，返回 <span class="math">\(T\)</span> 为输出；</li>
@@ -177,7 +177,7 @@
 <li>如果1和2都不满足，按照<strong>信息增益比</strong>对 <span class="math">\(A\)</span> 集合中所有元素对 <span class="math">\(D\)</span> 进行计算，选择当前其中最大的特征 <span class="math">\(A_g\)</span>；</li>
 <li>如果 <span class="math">\(A_g &lt; \varepsilon\)</span>，则将 <span class="math">\(T\)</span> 置为单节点树，并将 <span class="math">\(D\)</span> 中样本数量最大的类 <span class="math">\(C_k\)</span> 作为该结点的类，返回 <span class="math">\(T\)</span> 为输出；</li>
 <li>反之如果 <span class="math">\(A_g \geqslant \varepsilon\)</span>，对 <span class="math">\(A_g\)</span> 统计的取值范围中的每一个可能的值 <span class="math">\(a_i\)</span>，依照 <span class="math">\(A_g = a_i\)</span> 将 <span class="math">\(D\)</span> 分割成若干个非空子集 <span class="math">\(D_i\)</span>，将 <span class="math">\(D_i\)</span> 中样本数量最大的类作为标记，构建下属子节点，并由此节点和子节点（递归）构成 <span class="math">\(T\)</span>，最终返回 <span class="math">\(T\)</span> 为输出；</li>
-<li>对任意结点 <span class="math">\(i\)</span>，都以 <span class="math">\(D_i\)</span> 为训练数据集，并以 <span class="math">\(A-{A_g}\)</span> 为特征集，递归调用上述5个步骤，得到子树 <span class="math">\(T_i\)</span>，返回 <span class="math">\(T_i\)</span>。</li>
+<li>对任意结点 <span class="math">\(i\)</span>，都以 <span class="math">\(D_i\)</span> 为训练数据集，并以 <span class="math">\(A-{A_g}\)</span> 为特征集，递归调用上述5个步骤，得到子树 <span class="math">\(T_i\)</span>，返回 <span class="math">\(T_i\)</span>，算法结束。</li>
 </ol>
 <hr />
 <p>此时得到的决策树已经能很好地对果壳现有的用户进行分类，根据用户的社交活动属性将大多数 spammer 从中分离出来，但是我们发现虽然准确率非常高，但是仅仅存在于训练数据集，在测试集上表现平庸，甚至很差。这是因为上面的决策树训练步骤中，决策树是通过不断地递归生成，直到不能继续为止。那么这样产生的树极有可能会出现过拟合，原因就在于学习时过多地考虑如何对训练数据进行正确地分类，从而导致构造的决策树过于复杂。最常用的解决办法是对决策树深度，或者说是它的复杂度进行限制，也即决策树的剪枝。</p>
@@ -191,9 +191,26 @@
 </p>
 <div class="math">$$H_t(T) = -\sum_{k}^{}\frac{N_{tk}}{N_t}log\frac{N_{tk}}{N_t}$$</div>
 <p>
-带入上式，可得：
+将 <span class="math">\(H_t(T)\)</span> 带入上式，可得：
 </p>
-<div class="math">$$C_{\alpha}(T) = \sum_{t=1}^{|T|}\sum_{k=1}{K}N_{tk}log\frac{N_{tk}}{N_t}+\alpha |T|$$</div>
+<div class="math">$$C_{\alpha}(T) = \sum_{t=1}^{|T|}\sum_{k=1}^{K}N_{tk}log\frac{N_{tk}}{N_t}+\alpha |T|$$</div>
+<p>上式中的第一项表示模型对训练数据的预测误差，也就是拟合程度，<span class="math">\(\alpha\)</span> 参数用来控制两者之间的影响大小，<span class="math">\(\alpha\)</span> 值较大则会模型简单，反之亦然。</p>
+<p>我们剪枝的操作，说白了就是在已经固定 <span class="math">\(\alpha\)</span> 的前提下，选择损失函数最小的模型。可以想见的情况是，如果 <span class="math">\(\alpha\)</span> 已经固定，此时如果子树越大，往往与训练数据就会拟合得越好，但是模型就会更加复杂，反之亦然，而损失函数代表的恰恰就是两者之间的 tradeoff。</p>
+<p>那么我们说到的损失函数的极小化问题应该如何解决呢？很显然，我们可以等价地将这个问题转化为正则化的极大似然估计。</p>
+<p>也就是说，这种使用损失函数极小化的思路进行剪枝的操作就等价于使用正则化的极大似然估计进行模型选择。</p>
+<p>基本的剪枝流程如下：</p>
+<hr />
+<p><strong>输入</strong>：完全的过拟合的决策树模型 <span class="math">\(T\)</span>，参数 <span class="math">\(\alpha\)</span>；</p>
+<p><strong>输出</strong>：完成剪枝操作后的子树 <span class="math">\(T_\alpha\)</span>；</p>
+<p><strong>步骤</strong>：</p>
+<ol>
+<li>计算每个结点的经验熵；</li>
+<li>递归地从树的叶子结点向上回缩，这里我们不妨假设一组叶子结点回缩到其父节点之前与之后的整体决策树模型分别为 <span class="math">\(T_{before}\)</span> 和 <span class="math">\(T_{after}\)</span>，以及它们对应的损失函数分别为 <span class="math">\(C_\alpha(T_{before})\)</span> 与 <span class="math">\(C_\alpha(T_{after})\)</span>，此时，如果有：
+<div class="math">$$C_\alpha(T_{before}) \geqslant C_\alpha(T_{after})$$</div>
+则进行剪枝操作，也即将其父节点变成新的叶子结点，原叶子结点丢弃。</li>
+<li>继续执行步骤 2 直到停止，最终返回损失函数最小的子树 <span class="math">\(T_\alpha\)</span>，算法结束。</li>
+</ol>
+<hr />
 <h2>AdaBoost</h2>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
