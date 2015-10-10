@@ -145,6 +145,55 @@
 那么显然，熵越大，随机变量的不确定性也就越大。当随机变量为{0,1}时，即<span class="math">\(X\)</span>的分布为：
 </p>
 <div class="math">$$P(X=1)=p, P(X=0)=1-p, 0\leq p \leq 1$$</div>
+<p>
+那么对于两个变量<span class="math">\((X,Y)\)</span>，它们的联合概率分布为：
+</p>
+<div class="math">$$P(X=x_i, Y=y_i) = p_{ij}, i=1,2,…,n; j = 1,2,…,m$$</div>
+<p>
+条件熵<span class="math">\(H(Y|X)\)</span>表示的是已知随机变量<span class="math">\(X\)</span>的条件下随机变量<span class="math">\(Y\)</span>的不确定性，准确定义为<span class="math">\(X\)</span>给定条件下<span class="math">\(Y\)</span>的条件概率分别的熵对<span class="math">\(X\)</span>的数学期望：
+</p>
+<div class="math">$$H(Y|X)=\sum_{i=1}^{n}p_iH(Y|X=x_i), p_i=P(X=x_i), i=1,2,…,n$$</div>
+<p>在给出了不确定性的度量之后，我们还需要给出表示一种「得知特征<span class="math">\(X\)</span>的信息而使得类<span class="math">\(Y\)</span>的信息的不确定性减少的程度」，称之为<strong>信息增益</strong>。</p>
+<p>最简单的信息增益的算法是将集合的经验熵与给定某条件的情况下的经验条件熵直接取差值，例如定义特征<span class="math">\(A\)</span>对数据集<span class="math">\(D\)</span>的信息增益<span class="math">\(g(D,A)\)</span>可以表示为：
+</p>
+<div class="math">$$g(D,A)=H(D)-H(D|A)$$</div>
+<p>
+即表示「由于特征<span class="math">\(A\)</span>而使得对数据集<span class="math">\(D\)</span>的分类的不确定性减少的程度」，虽然这样的做差算法是合理的，但是会偏向于选择取值较多的特征的问题，因此我们使用<strong>信息增益比</strong>来对它进行校正。
+那么特征<span class="math">\(A\)</span>对数据集<span class="math">\(D\)</span>的信息增益比<span class="math">\(g_R(D,A)\)</span>定义为其信息增益<span class="math">\(g(D,A)\)</span>与训练数据集<span class="math">\(D\)</span>关于特征<span class="math">\(A\)</span>的值的熵<span class="math">\(H_A(D)\)</span>之比，即
+</p>
+<div class="math">$$g_R(D,A)=\frac{g(D,A)}{H_A(D)}$$</div>
+<p>
+其中，
+</p>
+<div class="math">$$H_A(D)=-\sum_{i=1}^{n}\frac{|D_i|}{|D|}log\frac{|D_i|}{|D|}，n 是特征 A 取值的个数$$</div>
+<p>C4.5决策树学习流程如下：</p>
+<hr />
+<p><strong>输入</strong>: 训练数据集：<span class="math">\(D\)</span>；特征集合：<span class="math">\(F\)</span>；阈值：<span class="math">\(\varepsilon\)</span></p>
+<p><strong>输出</strong>：一棵完整的决策树模型：<span class="math">\(T\)</span></p>
+<p><strong>步骤</strong>：</p>
+<ol>
+<li>如果 <span class="math">\(D\)</span> 中所有的样本都属于同一个类 <span class="math">\(C_k\)</span>，则将 <span class="math">\(T\)</span> 置为单节点树，以及将 <span class="math">\(C_k\)</span> 作为该结点的类，返回 <span class="math">\(T\)</span> 为输出；</li>
+<li>如果 <span class="math">\(A = \phi\)</span>，即供判断的特征集合为空，则将 <span class="math">\(T\)</span> 置为单节点树，并将 <span class="math">\(D\)</span> 中样本数量最大的类 <span class="math">\(C_k\)</span> 作为该结点的类，返回 <span class="math">\(T\)</span> 为输出；</li>
+<li>如果1和2都不满足，按照<strong>信息增益比</strong>对 <span class="math">\(A\)</span> 集合中所有元素对 <span class="math">\(D\)</span> 进行计算，选择当前其中最大的特征 <span class="math">\(A_g\)</span>；</li>
+<li>如果 <span class="math">\(A_g &lt; \varepsilon\)</span>，则将 <span class="math">\(T\)</span> 置为单节点树，并将 <span class="math">\(D\)</span> 中样本数量最大的类 <span class="math">\(C_k\)</span> 作为该结点的类，返回 <span class="math">\(T\)</span> 为输出；</li>
+<li>反之如果 <span class="math">\(A_g \geqslant \varepsilon\)</span>，对 <span class="math">\(A_g\)</span> 统计的取值范围中的每一个可能的值 <span class="math">\(a_i\)</span>，依照 <span class="math">\(A_g = a_i\)</span> 将 <span class="math">\(D\)</span> 分割成若干个非空子集 <span class="math">\(D_i\)</span>，将 <span class="math">\(D_i\)</span> 中样本数量最大的类作为标记，构建下属子节点，并由此节点和子节点（递归）构成 <span class="math">\(T\)</span>，最终返回 <span class="math">\(T\)</span> 为输出；</li>
+<li>对任意结点 <span class="math">\(i\)</span>，都以 <span class="math">\(D_i\)</span> 为训练数据集，并以 <span class="math">\(A-{A_g}\)</span> 为特征集，递归调用上述5个步骤，得到子树 <span class="math">\(T_i\)</span>，返回 <span class="math">\(T_i\)</span>。</li>
+</ol>
+<hr />
+<p>此时得到的决策树已经能很好地对果壳现有的用户进行分类，根据用户的社交活动属性将大多数 spammer 从中分离出来，但是我们发现虽然准确率非常高，但是仅仅存在于训练数据集，在测试集上表现平庸，甚至很差。这是因为上面的决策树训练步骤中，决策树是通过不断地递归生成，直到不能继续为止。那么这样产生的树极有可能会出现过拟合，原因就在于学习时过多地考虑如何对训练数据进行正确地分类，从而导致构造的决策树过于复杂。最常用的解决办法是对决策树深度，或者说是它的复杂度进行限制，也即决策树的剪枝。</p>
+<p>具体地说，剪枝就是从已经生成的决策树上删除一些子树或者结点，然后将它的父节点当做新的叶子结点，从而使整个决策树模型变得简单，也具有更强的容错能力。</p>
+<p>决策树的剪枝方法有很多，我们使用一种较为简单也较为常用的方法。</p>
+<p>决策树剪枝的问题可以看做是对整个模型的损失函数求极小值。这里我们不妨假设已经生成的决策树 <span class="math">\(T\)</span> 的叶子结点个数为 <span class="math">\(|T|\)</span>，<span class="math">\(t\)</span> 为其中的一个叶子结点，最终分类到该叶子结点的样本的个数为 <span class="math">\(N_t\)</span> 个，其中 <span class="math">\(k\)</span> 类的样本点有 <span class="math">\(N_{tk}\)</span> 个，<span class="math">\(H_t(T)\)</span> 为叶子结点 <span class="math">\(t\)</span> 上的经验熵，<span class="math">\(\alpha \geqslant 0\)</span> 为参数，那么模型的损失函数即为：
+</p>
+<div class="math">$$C_{\alpha}(T) = \sum_{t=1}^{|T|}N_tH_t(T)+\alpha |T|$$</div>
+<p>
+则经验熵为：
+</p>
+<div class="math">$$H_t(T) = -\sum_{k}^{}\frac{N_{tk}}{N_t}log\frac{N_{tk}}{N_t}$$</div>
+<p>
+带入上式，可得：
+</p>
+<div class="math">$$C_{\alpha}(T) = \sum_{t=1}^{|T|}\sum_{k=1}{K}N_{tk}log\frac{N_{tk}}{N_t}+\alpha |T|$$</div>
 <h2>AdaBoost</h2>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
