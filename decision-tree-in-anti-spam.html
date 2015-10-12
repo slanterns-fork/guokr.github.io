@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="author" content="ailurus1991" />
+    <meta name="robots" content="index, follow"/>
+
+    <meta property="og:title" content="决策树算法在果壳网反垃圾系统中的实践"/>
+    <meta property="og:url" content="/decision-tree-in-anti-spam.html"/>
+    <meta property="og:site_name" content="果壳网平台组博客"/>
+    <meta property="og:type" content="article"/>
+
+    <link rel="canonical" href="/decision-tree-in-anti-spam.html" />
+
+    <title>决策树算法在果壳网反垃圾系统中的实践 | 果壳网平台组博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" />
+    <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" />
+
+    <link rel="stylesheet" type="text/css" href="/theme/css/main.css" />
+
+    <script type="text/javascript">var switchTo5x=true;</script>
+    <script type="text/javascript" src="http://w.sharethis.com/button/buttons.js"></script>
+    <script type="text/javascript">
+        stLight.options({
+            publisher: "",
+            doNotHash: false,
+            doNotCopy: false,
+            hashAddressBar: false
+        });
+    </script>
+</head>
+
+<body id="index">
+    <div class="row-fluid">
+        <div class="span10 offset1">
+            <header id="banner" >
+                <h1>
+                    <a href="/">果壳网平台组博客 </a>
+                </h1>
+                <nav class="navbar">
+                    <div class="navbar-inner">
+                        <ul class="nav">
+                            <li ><a href="/pages/about-us.html">关于我们</a></li>
+                            <li class="active"><a href="/category/suan-fa-tuan-dui.html">算法团队</a></li>
+                        </ul>
+
+<script>
+  (function() {
+    var cx = '003025244840536168340:jz_-drscere';
+    var gcse = document.createElement('script'); gcse.type = 'text/javascript'; gcse.async = true;
+    gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
+        '//www.google.com/cse/cse.js?cx=' + cx;
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(gcse, s);
+  })();
+</script>
+<div id="google-custom-search" class="nav">
+    <gcse:search></gcse:search>
+</div>
+                    </div>
+                </nav>
+            </header><!-- /#banner -->
+        </div>
+    </div>
+
+    <div class="row-fluid">
+        <div class="span10 offset1">
+            <div class="row-fluid">
+<div class="span10 offset1">
+  <section>
+    <article>
+      <header>
+        <h1 class="entry-title">
+          <a href="/decision-tree-in-anti-spam.html" rel="bookmark"
+             title="Permalink to 决策树算法在果壳网反垃圾系统中的实践">决策树算法在果壳网反垃圾系统中的实践</a></h1>
+      </header>
+      <div class="entry-content">
+<footer class="post-info">
+    <address class="vcard author">
+        by <a class="url fn" href="/author/xiao-xiong-mao.html">小熊猫</a>
+    </address>
+
+    in <a href="/category/suan-fa-tuan-dui.html">算法团队</a>
+
+    on 2015-09-28
+
+        |
+        tags:         <a href="/tag/suan-fa.html">算法</a>
+        <a href="/tag/ji-cheng-xue-xi.html">集成学习</a>
+        <a href="/tag/ji-qi-xue-xi.html">机器学习</a>
+        <a href="/tag/jue-ce-shu.html">决策树</a>
+
+
+
+    
+</footer><!-- /.post-info -->
+
+        <h2>摘要</h2>
+<p>决策树（Decision Tree）是机器学习领域中一种基本的分类与回归方法，在分类的问题中，表示基于特征对实例进行分类的过程。粗浅地看，可以认为是一组特定 if-else 规则的集合，也可以认为是定义在特征空间和类空间上的条件概率分布。由于算法既简单易懂，又十分高效，所以在实际应用中非常广泛。本文主要介绍决策树算法在果壳网反垃圾系统中的应用与实践心得。</p>
+<h2>背景问题</h2>
+<p>果壳网社区项目是目前果壳的主要流量来源，包含有果壳小组，果壳问答，知性社区，MOOC 社区等。社区内部有大量的垃圾用户，频繁发帖，给运营人员的工作带来了很大的压力，也影响了社区正常的环境。</p>
+<p><img alt="test" src="../images/algo1.png" /></p>
+<p>如何区分正常用户和 spammer 可以看成是一个分类问题，准确地说，其实是一个二分类问题。常用的分类机器学习算法都可以使用，包括但不限于SVM，逻辑回归，朴素贝叶斯。由于这些分类算法都属于有监督的机器学习，因此必须要使用一些已经标注好的样本进行训练。毫无疑问，现有的用户信息都在 log 中，我们究竟要取其中的哪些作为用户的 feature 来训练，以及是否还需要人工标注，都是接下来需要面临的特征工程问题。</p>
+<p>对 raw data 的清洗和挖掘是整个机器学习系统的第一个关键性步骤，对算法的设计和结果都会产生重大的影响，会另写一篇详述，在此不表。</p>
+<p>不妨假设我们得到的训练样本集合：
+</p>
+<div class="math">$$D=(x_1,y_1), (x_2,y_2),…,(x_N,y_N)$$</div>
+<p>
+这里，<span class="math">\(x_i\)</span> 是一个 <span class="math">\(m\)</span> 维的向量，<span class="math">\(x_i=[x_{1i},x_{2i},…,x_{mi}]\)</span>，因为是二分类问题，所以 <span class="math">\(y\)</span> 将会是在 <span class="math">\({0,1}\)</span> 中取值。因此问题转化为我们需要寻找一个模型，而它恰恰是从训练<span class="math">\(D\)</span>中样本 <span class="math">\((x_i,y_i)\)</span> 所带来的信息学习而来。具体地说，对于一个样本输入 <span class="math">\(x_i\)</span> 来说，我们的模型 <span class="math">\(y=f(x)\)</span> 会给出一个输出 <span class="math">\(f(x_i)\)</span>，而训练数据集中对应的输出是 <span class="math">\(y_i\)</span>，如果这个模型有很好的预测能力，训练样本的输出 <span class="math">\(y_i\)</span> 应该与模型的输出 <span class="math">\(f(x_i)\)</span> 一致。</p>
+<p>在此处的二分类问题中，我们的损失函数是0-1损失，所以测试误差就变成了常见的测试数据集上的误差率:</p>
+<div class="math">$$e_{test}=\frac{1}{N’}\sum_{i=1}^{N'}I(y_i\neq f(x_i))$$</div>
+<p>这里 <span class="math">\(I\)</span> 是指示函数，即当 <span class="math">\(y_i\neq f(x_i)\)</span> 的时候为1，否则为0。</p>
+<h2>特征启发</h2>
+<p>虽然特征工程不属于本文范畴，但关于究竟哪些用户数据可以用来判定 spammer，不妨一谈。在果壳网现有的几个社区型项目中，既有「写日志」，「回答问题」，「小组发帖」，「小组回复」这样的高投入行为，也有像「点赞」，「推荐」这样的低投入行为，那么用户在这些行为中投入所期待的回报是什么呢？我们认为，这里的回报可以等价于该用户所带来的社交影响力。具体表现为：</p>
+<ol>
+<li>spammer 的很多动作会在动态列表中显示，进而出现在其所有 follower 的 timeline 中；</li>
+<li>spammer 发的帖子会被小组的所有成员看到和点击；</li>
+</ol>
+<p>那么显然，投入和回报的比例在普通用户和 spammer 身上是有理由区分的。通过实际数据调研同样发现：</p>
+<ol>
+<li>多数 spammer 更倾向于在人数较多的小组发广告；</li>
+<li>日志较长，状态较多，且没有 follower，或极少；</li>
+<li>所有 spammer 都未使用不会出现在他人 timeline 中的功能，例如「添加到果篮」；</li>
+</ol>
+<p>据此，我们将 user_profile 中可能涉及社交回报的数据筛选出来作为训练样本的特征，然而再进行进一步的特征工程工作。</p>
+<p>在拥有这样的启发思路之后，我们发现决策树算法很符合从行为上判断 spammer 的逻辑，同时分类结果也具备很强的可解释性，考虑到特征中有很多连续变量，我们使用 C4.5决策树算法。</p>
+<h2>决策树学习</h2>
+<p>背景部分介绍的0-1损失函数，实际上也就是正则化的极大似然函数，换言之，决策树的学习就等价于以损失函数为目标函数的最小化。那么当损失函数确定下来之后，我们的问题就转变成在损失函数意义下选择最好的决策树。</p>
+<p>整个算法流程实际上是递归地寻找最优（最具有区分度）特征，并以此来渐渐分特征空间，也进而对应着决策树的构建。具体来说：</p>
+<ol>
+<li>选择一个最具有区分度的特征，分割特征空间为子集；</li>
+<li>根据分割结果判断是否所有样本均被正确分类；</li>
+<li>如果是，则标记叶子结点，结束；如果不是，对划分的子集选择新的最优特征重复 1 的操作，直到全部分类正确或没有合适的特征为止；</li>
+</ol>
+<p>这样构建的决策树对训练样本来说，可能效果很好，但是对于测试数据可能会由于过拟合问题性能很差。对此，我们还需要对过于复杂的决策树模型进行剪枝操作，让整个树变得更简单，也使它具备更强的泛化能力，从而完成整个决策树算法。</p>
+<p>那么对于步骤 1，我们应该如何比较这些特征的区分度呢？我们使用信息论中的熵（entropy） 概念来作为判定的基础。</p>
+<p>在信息论中，熵是表示随机变量不确定性的度量，假设 <span class="math">\(X\)</span> 是一个取有上限值的离散随机变量，那么其概率分布为：
+</p>
+<div class="math">$$P(X=x_i)=p_i, i=1,2,…,n$$</div>
+<p>
+则随机变量 <span class="math">\(X\)</span> 的熵定义为：
+</p>
+<div class="math">$$H(X)=-\sum_{i=1}^{n}p_ilog(p_i)$$</div>
+<p>
+那么显然，熵越大，随机变量的不确定性也就越大。当随机变量为 <span class="math">\({0,1}\)</span> 时，即 <span class="math">\(X\)</span> 的分布为：
+</p>
+<div class="math">$$P(X=1)=p, P(X=0)=1-p, 0\leq p \leq 1$$</div>
+<p>
+那么对于两个变量 <span class="math">\((X,Y)\)</span>，它们的联合概率分布为：
+</p>
+<div class="math">$$P(X=x_i, Y=y_i) = p_{ij}, i=1,2,…,n; j = 1,2,…,m$$</div>
+<p>
+条件熵 <span class="math">\(H(Y|X)\)</span> 表示的是已知随机变量 <span class="math">\(X\)</span> 的条件下随机变量 <span class="math">\(Y\)</span> 的不确定性，准确定义为 <span class="math">\(X\)</span> 给定条件下 <span class="math">\(Y\)</span> 的条件概率分别的熵对 <span class="math">\(X\)</span> 的数学期望：
+</p>
+<div class="math">$$H(Y|X)=\sum_{i=1}^{n}p_iH(Y|X=x_i), p_i=P(X=x_i), i=1,2,…,n$$</div>
+<p>在给出了不确定性的度量之后，我们还需要给出表示一种「得知特征 <span class="math">\(X\)</span> 的信息而使得类 <span class="math">\(Y\)</span> 的信息的不确定性减少的程度」，称之为<strong>信息增益</strong>。</p>
+<p>最简单的信息增益的算法是将集合的经验熵与给定某条件的情况下的经验条件熵直接取差值，例如定义特征 <span class="math">\(A\)</span> 对数据集 <span class="math">\(D\)</span> 的信息增益 <span class="math">\(g(D,A)\)</span> 可以表示为：
+</p>
+<div class="math">$$g(D,A)=H(D)-H(D|A)$$</div>
+<p>
+即表示「由于特征 <span class="math">\(A\)</span> 而使得对数据集 <span class="math">\(D\)</span> 的分类的不确定性减少的程度」，虽然这样的做差算法是合理的，但是会偏向于选择取值较多的特征的问题，因此我们使用<strong>信息增益比</strong>来对它进行校正。
+那么特征 <span class="math">\(A\)</span> 对数据集 <span class="math">\(D\)</span> 的信息增益比 <span class="math">\(g_R(D,A)\)</span> 定义为其信息增益 <span class="math">\(g(D,A)\)</span> 与训练数据集 <span class="math">\(D\)</span> 关于特征 <span class="math">\(A\)</span> 的值的熵 <span class="math">\(H_A(D)\)</span> 之比，即
+</p>
+<div class="math">$$g_R(D,A)=\frac{g(D,A)}{H_A(D)}$$</div>
+<p>
+其中，
+</p>
+<div class="math">$$H_A(D)=-\sum_{i=1}^{n}\frac{|D_i|}{|D|}log\frac{|D_i|}{|D|}，n 是特征 A 取值的个数$$</div>
+<p>C4.5决策树学习流程如下：</p>
+<hr />
+<p><strong>输入</strong>: 训练数据集：<span class="math">\(D\)</span>；特征集合：<span class="math">\(F\)</span>；阈值：<span class="math">\(\varepsilon\)</span>；</p>
+<p><strong>输出</strong>：一棵完整的决策树模型：<span class="math">\(T\)</span>；</p>
+<p><strong>步骤</strong>：</p>
+<ol>
+<li>如果 <span class="math">\(D\)</span> 中所有的样本都属于同一个类 <span class="math">\(C_k\)</span>，则将 <span class="math">\(T\)</span> 置为单节点树，以及将 <span class="math">\(C_k\)</span> 作为该结点的类，返回 <span class="math">\(T\)</span> 为输出；</li>
+<li>如果 <span class="math">\(A = \phi\)</span>，即供判断的特征集合为空，则将 <span class="math">\(T\)</span> 置为单节点树，并将 <span class="math">\(D\)</span> 中样本数量最大的类 <span class="math">\(C_k\)</span> 作为该结点的类，返回 <span class="math">\(T\)</span> 为输出；</li>
+<li>如果1和2都不满足，按照<strong>信息增益比</strong>对 <span class="math">\(A\)</span> 集合中所有元素对 <span class="math">\(D\)</span> 进行计算，选择当前其中最大的特征 <span class="math">\(A_g\)</span>；</li>
+<li>如果 <span class="math">\(A_g &lt; \varepsilon\)</span>，则将 <span class="math">\(T\)</span> 置为单节点树，并将 <span class="math">\(D\)</span> 中样本数量最大的类 <span class="math">\(C_k\)</span> 作为该结点的类，返回 <span class="math">\(T\)</span> 为输出；</li>
+<li>反之如果 <span class="math">\(A_g \geqslant \varepsilon\)</span>，对 <span class="math">\(A_g\)</span> 统计的取值范围中的每一个可能的值 <span class="math">\(a_i\)</span>，依照 <span class="math">\(A_g = a_i\)</span> 将 <span class="math">\(D\)</span> 分割成若干个非空子集 <span class="math">\(D_i\)</span>，将 <span class="math">\(D_i\)</span> 中样本数量最大的类作为标记，构建下属子节点，并由此节点和子节点（递归）构成 <span class="math">\(T\)</span>，最终返回 <span class="math">\(T\)</span> 为输出；</li>
+<li>对任意结点 <span class="math">\(i\)</span>，都以 <span class="math">\(D_i\)</span> 为训练数据集，并以 <span class="math">\(A-{A_g}\)</span> 为特征集，递归调用上述5个步骤，得到子树 <span class="math">\(T_i\)</span>，返回 <span class="math">\(T_i\)</span>，算法结束。</li>
+</ol>
+<hr />
+<p>此时得到的决策树已经能很好地对果壳现有的用户进行分类，根据用户的社交活动属性将大多数 spammer 从中分离出来，但是我们发现虽然准确率非常高，但是仅仅存在于训练数据集，在测试集上表现平庸，甚至很差。这是因为上面的决策树训练步骤中，决策树是通过不断地递归生成，直到不能继续为止。那么这样产生的树极有可能会出现过拟合，原因就在于学习时过多地考虑如何对训练数据进行正确地分类，从而导致构造的决策树过于复杂。最常用的解决办法是对决策树深度，或者说是它的复杂度进行限制，具体地，就是对决策树进行剪枝操作。</p>
+<p>具体地说，剪枝就是从已经生成的决策树上删除一些子树或者结点，然后将它的父节点当做新的叶子结点，从而使整个决策树模型变得简单，也具有更强的容错能力。</p>
+<p>决策树的剪枝方法有很多，我们使用一种较为简单也较为常用的方法。</p>
+<p>决策树剪枝的问题可以看做是对整个模型的损失函数求极小值。这里我们不妨假设已经生成的决策树 <span class="math">\(T\)</span> 的叶子结点个数为 <span class="math">\(|T|\)</span>，<span class="math">\(t\)</span> 为其中的一个叶子结点，最终分类到该叶子结点的样本的个数为 <span class="math">\(N_t\)</span> 个，其中 <span class="math">\(k\)</span> 类的样本点有 <span class="math">\(N_{tk}\)</span> 个，<span class="math">\(H_t(T)\)</span> 为叶子结点 <span class="math">\(t\)</span> 上的经验熵，<span class="math">\(\alpha \geqslant 0\)</span> 为参数，那么模型的损失函数即为：
+</p>
+<div class="math">$$C_{\alpha}(T) = \sum_{t=1}^{|T|}N_tH_t(T)+\alpha |T|$$</div>
+<p>
+则经验熵为：
+</p>
+<div class="math">$$H_t(T) = -\sum_{k}^{}\frac{N_{tk}}{N_t}log\frac{N_{tk}}{N_t}$$</div>
+<p>
+将 <span class="math">\(H_t(T)\)</span> 带入上式，可得：
+</p>
+<div class="math">$$C_{\alpha}(T) = \sum_{t=1}^{|T|}\sum_{k=1}^{K}N_{tk}log\frac{N_{tk}}{N_t}+\alpha |T|$$</div>
+<p>上式中的第一项表示模型对训练数据的预测误差，也就是拟合程度，<span class="math">\(\alpha\)</span> 参数用来控制两者之间的影响大小，<span class="math">\(\alpha\)</span> 值较大则会模型简单，反之亦然。</p>
+<p>我们剪枝的操作，说白了就是在已经固定 <span class="math">\(\alpha\)</span> 的前提下，选择损失函数最小的模型。可以想见的情况是，如果 <span class="math">\(\alpha\)</span> 已经固定，此时如果子树越大，往往与训练数据就会拟合得越好，但是模型就会更加复杂，反之亦然，而损失函数代表的恰恰就是两者之间的 tradeoff。</p>
+<p>那么我们说到的损失函数的极小化问题应该如何解决呢？很显然，我们可以等价地将这个问题转化为正则化的极大似然估计。</p>
+<p>也就是说，这种使用损失函数极小化的思路进行剪枝的操作就等价于使用正则化的极大似然估计进行模型选择。</p>
+<p>基本的剪枝流程如下：</p>
+<hr />
+<p><strong>输入</strong>：完全的过拟合的决策树模型 <span class="math">\(T\)</span>，参数 <span class="math">\(\alpha\)</span>；</p>
+<p><strong>输出</strong>：完成剪枝操作后的子树 <span class="math">\(T_\alpha\)</span>；</p>
+<p><strong>步骤</strong>：</p>
+<ol>
+<li>计算每个结点的经验熵；</li>
+<li>递归地从树的叶子结点向上回缩，这里我们不妨假设一组叶子结点回缩到其父节点之前与之后的整体决策树模型分别为 <span class="math">\(T_{before}\)</span> 和 <span class="math">\(T_{after}\)</span>，以及它们对应的损失函数分别为 <span class="math">\(C_\alpha(T_{before})\)</span> 与 <span class="math">\(C_\alpha(T_{after})\)</span>，此时，如果有：
+<div class="math">$$C_\alpha(T_{before}) \geqslant C_\alpha(T_{after})$$</div>
+则进行剪枝操作，也即将其父节点变成新的叶子结点，原叶子结点丢弃。</li>
+<li>继续执行步骤 2 直到停止，最终返回损失函数最小的子树 <span class="math">\(T_\alpha\)</span>，算法结束。</li>
+</ol>
+<hr />
+<p><img alt="test" src="../images/pruning.jpg" /></p>
+<p>上图为剪枝操作的示意图，将部分结点裁剪后的决策树模型虽然变得更加简单，却拥有了更强的泛化能力，很好地应对训练数据过拟合的问题。</p>
+<p>虽然这样的决策树模型已经拥有较好的分类性能，但是在实践中我们发现那些被错误分类的样本，却没有得到应有的重视，这样的分类器的适应能力并不好，以及它是不具备自我修正能力的。</p>
+<p>「<strong>将那些被错误归类的样本加大权重，放回分类器继续学习，直到它们也被正确地分类</strong>」，这是一个可以尝试的继续优化的思路。</p>
+<h2>AdaBoost 集成</h2>
+<p>以上的单棵决策树模型求解思路属于传统的机器学习方法，在一个由各种可能的函数构成空间中寻找一个最接近实际分类函数 <span class="math">\(f(x)\)</span> 的分类器 <span class="math">\(h(x)\)</span>。而集成学习的思想是在对新的样本进行分类的时候，把若干个分类器结合起来，将它们的结果进行某种组合来决定最终的分类。</p>
+<p>在集成学习中，基本分类器之间的协作关系常见的有 Bagging 思路和 Boosting 思路。Bagging 思路是最简单最直观的一种，其主要思想是对训练集<strong>有放回地</strong>抽取训练样本，从而为每一个弱分类器构造出一个与训练集 <span class="math">\(D\)</span> 大小相同，但样本却不同的训练集 <span class="math">\(\bar{D}\)</span>，从而训练出不同的弱分类器。常见的随机森林算法就是它最为典型的应用之一。</p>
+<p>Bagging 思想如下：</p>
+<hr />
+<p><strong>输入</strong>：弱分类器：<span class="math">\(L\)</span>；弱分类器个数：<span class="math">\(N\)</span>；数据集：<span class="math">\(D\)</span>；</p>
+<p><strong>输出</strong>：
+<span class="math">\(h_f(x) = \underset{y\in Y}{argmax}\sum_{i=1}^{N}h_i(x)=y\)</span></p>
+<p><strong>步骤</strong>：</p>
+<ol>
+<li>从数据集 <span class="math">\(D\)</span> 中抽样得到新的数据集 <span class="math">\(\bar{D}\)</span>；</li>
+<li>将 <span class="math">\(\bar{D}\)</span> 放入弱分类器中，即 <span class="math">\(h_i=L(\bar{D})\)</span>；</li>
+<li>循环 <span class="math">\(N\)</span> 次，算法结束。</li>
+</ol>
+<hr />
+<p>相比于 Bagging，Boosting 思想则在计算上更符合情理，实践中也更符合我们的需求。</p>
+<p>Boosting 思想是对那些被分类错误的训练样本进行加强学习，具体来说，首先给每一个训练样本赋予相同的权重，然后训练第一个弱分类器并用它来对训练集进行验证，对于那些被分类错误的样本加大权重，也即把训练集合中的所有样本权重值进行更新，然后用这些带有新的权重的训练集去训练第二个弱分类器，不断重复这个过程直到全部分类正确或者强制停止。</p>
+<p>那么 Boosting 思想中，最为常用的莫过于 AdaBoost 方法，在 Boosting 阶段之后，会将得到的若干弱分类器进行合理的线性组合，也即加大正确率高的弱分类器的权值，减少正确率低的弱分类器的权值。</p>
+<p>对于 AdaBoost 的流程，我们不妨先用一张图来认识：
+<img alt="test" src="../images/adaboost.jpg" /></p>
+<p>下面是 AdaBoost 算法的具体执行步骤：</p>
+<hr />
+<p><strong>输入</strong>：数据集：<span class="math">\(D={(x_1,y_1), (x_2,y_2),…,(x_N,y_N)}, y_i={-1,1}\)</span>，弱分类器 <span class="math">\(L\)</span>，弱分类器个数 <span class="math">\(M\)</span>；</p>
+<p><strong>输出</strong>：最终分类器模型 <span class="math">\(G(x)\)</span>；</p>
+<p><strong>步骤</strong>：</p>
+<ol>
+<li>首先需要对训练集合中样本的权值进行初始化操作：
+<div class="math">$$W_1 = (w_{11},w_{12},…,w_{1i},w_{1N}), w_{1i}=\frac{1}{N}, i=1,2,…,N$$</div>
+</li>
+<li>训练集 <span class="math">\(D\)</span> 的样本权值更新为 <span class="math">\(W_m\)</span>（初始化时<span class="math">\(m=1\)</span>，即保持不变），放入弱分类器进行学习，得到模型 <span class="math">\(G_m(x)\)</span>；</li>
+<li>计算 <span class="math">\(G_m(x)\)</span> 在 <span class="math">\(D\)</span> 上的错误率：
+<div class="math">$$e_m = P(G_m(x_i)\neq y_i)=\sum_{i=1}^{N}w_{mi}I(G_m(x_i)\neq y_i)$$</div>
+</li>
+<li>计算 <span class="math">\(G_m(x)\)</span> 的系数为：
+<div class="math">$$\alpha_m=\frac{1}{2}log\frac{1-e_m}{e_m}$$</div>
+</li>
+<li>依据错误情况更新样本的权值空间为：
+<div class="math">$$W_{m+1} = (w_{m+1,1},w_{m+1,2},…,w_{m+1,i},…,w_{m+1,N})$$</div>
+其中依据为：
+<div class="math">$$w_{m+1,i}=\frac{w_{mi}}{Z_m}e^{-\alpha_m y_iG_m(x_i)}, i = 1,2,…,N$$</div>
+其中 <span class="math">\(Z_m\)</span> 为规范化因子：
+<div class="math">$$Z_m=\sum_{i=1}^{N}w_{mi}e^{-\alpha_my_iG_m(x_i)}$$</div>
+</li>
+<li>重复步骤2~5直到循环结束，得到最终分类器为：
+<div class="math">$$G(x)=sign(f(x))=sign(\sum_{m=1}^{M}\alpha_mG_m(x))$$</div>
+</li>
+</ol>
+<hr />
+<p>那么最终我们的分类模型就是 AdaBoost 的输出 <span class="math">\(G(x)\)</span>，它将用户的社交行为当做输入，输出为用户是否为 spammer 的判断。</p>
+<h2>总结</h2>
+<p>通过大量的数据调研，我们发现 spammer 在站内的行为与内容两个方面上都有区别于正常用户，两者既相互独立又相辅相成，据此我们的反垃圾系统从用户行为和内容分别进行判断。</p>
+<p>对于用户行为，我们采用C4.5决策树进行学习和分类，为了使模型具备更强的泛化能力，我们为它设计了剪枝操作，在最后我们使用 AdaBoost 提升算法进一步使模型具备一定的自我修正能力。</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    var location_protocol = (false) ? 'https' : document.location.protocol;
+    if (location_protocol !== 'http' && location_protocol !== 'https') location_protocol = 'https:';
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = location_protocol + '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    mathjaxscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+
+      </div><!-- /.entry-content -->
+
+    </article>
+  </section>
+</div>
+            </div>
+        </div>
+    </div>
+
+    <footer id="site-footer">
+        <div class="row-fluid">
+            <div class="span10 offset1">
+                <address>
+                    <p>
+                        © 2015 果壳网平台组 All rights reserved.
+                    </p>
+                    <p>
+                        This blog is proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                    </p>
+                    <p>
+                        <a href="http://github.com/jsliang/pelican-fresh/">Fresh</a> is a responsive theme designed by <a href="http://jsliang.com/">jsliang</a> and <a href="https://github.com/jsliang/pelican-fresh/graphs/contributors">contributors</a>.
+                        Special thanks to <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a> and <a href="http://getbootstrap.com/">Twitter Bootstrap</a>.
+                    </p>
+                </address>
+            </div>
+        </div>
+    </footer>
+
+    <script src="//code.jquery.com/jquery.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/2.3.2/js/bootstrap.min.js"></script>
+</body>
+</html>
