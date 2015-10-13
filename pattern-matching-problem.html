@@ -5,14 +5,14 @@
     <meta name="author" content="ailurus1991" />
     <meta name="robots" content="index, follow"/>
 
-    <meta property="og:title" content="果壳网平台组博客 - 小熊猫"/>
-    <meta property="og:url" content="/author/xiao-xiong-mao.html"/>
+    <meta property="og:title" content="敏感词项目中的柔性字符串匹配问题"/>
+    <meta property="og:url" content="/pattern-matching-problem.html"/>
     <meta property="og:site_name" content="果壳网平台组博客"/>
-    <meta property="og:type" content="website"/>
+    <meta property="og:type" content="article"/>
 
-    <link rel="canonical" href="/author/xiao-xiong-mao.html" />
+    <link rel="canonical" href="/pattern-matching-problem.html" />
 
-    <title>果壳网平台组博客 - 小熊猫 | 果壳网平台组博客</title>
+    <title>敏感词项目中的柔性字符串匹配问题 | 果壳网平台组博客</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" />
@@ -43,7 +43,7 @@
                     <div class="navbar-inner">
                         <ul class="nav">
                             <li ><a href="/pages/about-us.html">关于我们</a></li>
-                            <li ><a href="/category/suan-fa-tuan-dui.html">算法团队</a></li>
+                            <li class="active"><a href="/category/suan-fa-tuan-dui.html">算法团队</a></li>
                         </ul>
 
 <script>
@@ -67,19 +67,15 @@
     <div class="row-fluid">
         <div class="span10 offset1">
             <div class="row-fluid">
-<div class="span9">
-                <section>
-                    <ol id="posts-list" class="hfeed" start="4">
-                    <li>
-                        <article>
-                            <header>
-                                <h1 class="entry-title">
-                                    <a href="/pattern-matching-problem.html" rel="bookmark" title="Permalink to 敏感词项目中的柔性字符串匹配问题">
-                                       敏感词项目中的柔性字符串匹配问题
-                                    </a>
-                                </h1>
-                            </header>
-                            <div class="entry-content">
+<div class="span10 offset1">
+  <section>
+    <article>
+      <header>
+        <h1 class="entry-title">
+          <a href="/pattern-matching-problem.html" rel="bookmark"
+             title="Permalink to 敏感词项目中的柔性字符串匹配问题">敏感词项目中的柔性字符串匹配问题</a></h1>
+      </header>
+      <div class="entry-content">
 <footer class="post-info">
     <address class="vcard author">
         by <a class="url fn" href="/author/xiao-xiong-mao.html">小熊猫</a>
@@ -98,14 +94,35 @@
 
 
     
-</footer><!-- /.post-info -->                                <h2>摘要</h2>
+</footer><!-- /.post-info -->
+
+        <h2>摘要</h2>
 <p>在给定文本中排查一个固定字符串并不是一件很难的事情，但是倘若给定的字符串库十分庞大，以及涉及到多种字符串组合的时候，还能否高效迅速准确地排查就成了一个有挑战的问题。本文对字符串匹配问题做了一个较为系统深入的研究工作，并将其用于对果壳网现有敏感词项目的改进。</p>
 <h2>背景问题</h2>
 <p>敏感词的排查是所有社交网络都会面临的一个任务，对于固定的字符串，直观的想法可以是从列表中挨个取出所有的敏感词，再将它们与全文做一一比对即可，这样的思路虽然可行，但是在面对不断扩大的敏感词列表，既丑陋又笨拙。除此之外，线上还有一些动名词组合的情况需要考虑，即动词和名词分别可以出现，但是当它们以一种可以被识别的形式出现，并传达正确意义的时候，那就理应得到屏蔽。</p>
 <p>对于固定的字符串，如何最快速地将它们全部抓出来；对于动名词组合，如何在做到不放过一条漏网之鱼的情况下尽量避免误伤，都是亟待解决的问题。</p>
 <p>对于固定的敏感词匹配，可以抽象为字符串匹配问题，下面我们对这个问题进行深入研究。</p>
 <h2>对问题的重定义</h2>
-<p>一个字符串是一个定义在有限字母集合 <span class="math">\(\sum\)</span> 上的字符序列。例如 <span class="math">\(ABCDABC\)</span> 就是字母表 <span class="math">\(\sum = \{A,B,C,D\}\)</span> 上的一个字符串。那么字符串匹配问题实际上就是在一个大的字符串 <span class="math">\(T\)</span> 中搜索某个特定的字符串 <span class="math">\(p\)</span> 出现的位置。为方便表述，在这里我们不妨把 <span class="math">\(T\) ...</span></p><script type='text/javascript'>if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+<p>一个字符串是一个定义在有限字母集合 <span class="math">\(\sum\)</span> 上的字符序列。例如 <span class="math">\(ABCDABC\)</span> 就是字母表 <span class="math">\(\sum = \{A,B,C,D\}\)</span> 上的一个字符串。那么字符串匹配问题实际上就是在一个大的字符串 <span class="math">\(T\)</span> 中搜索某个特定的字符串 <span class="math">\(p\)</span> 出现的位置。为方便表述，在这里我们不妨把 <span class="math">\(T\)</span> 称作文本，<span class="math">\(p\)</span> 称作模式串，长度为 <span class="math">\(m\)</span>，以及 <span class="math">\(T\)</span> 和 <span class="math">\(p\)</span> 都定义在同一个字母表 <span class="math">\(\sum\)</span> 上。</p>
+<p>对于单个的字符串问题，根据搜索模式串的方式的不同，一般来说可以归结为三种思路：</p>
+<h4>基于前缀</h4>
+<p>从文本中挨个读字符，每读一个字符就更新相应的变量，检查是否存在一个可能的匹配。这种思路中最为典型的就是大名鼎鼎 <a href="">KMP 算法</a>以及后来居上的 <a href="">Shift-Or</a>。</p>
+<h4>基于后缀</h4>
+<p>先设定一个滑动的窗口 <span class="math">\(W\)</span>，滑动窗口沿着文本 <span class="math">\(T\)</span> 移动，对于任意位置上的窗口，在窗口中从后向前搜索窗口中的文本和模式串 <span class="math">\(p\)</span> 的公共后缀。<a href="">BM 算法</a>就是使用了这种思想，但是一般情况下，BM 的一个简化版本 <a href="">Horspool</a> 性能更好，同时也有着非常广泛的应用，通常我们的浏览器、编辑器中的搜索功能都是它的实现。</p>
+<h4>基于子串</h4>
+<p>和第二种方法类似，这里也使用了滑动窗口的概念，也是从后向前搜索。有区别的地方是，搜索目标变成了是窗口中文本的最长后缀，显然它同时也是模式串 <span class="math">\(p\)</span> 的一个子串。最早使用这个思想的是 <a href="">BDM 算法</a>，如果模式串 <span class="math">\(p\)</span> 稍短，可以将它改进为 <a href="">BNDM</a>。</p>
+<p>鉴于基于前缀的搜索比较慢，以及基于子串的搜索方法只适合非常长的字符串，而这与我们的敏感词匹配要求并不复合，因此我们选择基于后缀的搜索方法。</p>
+<p>前面提到这种基于后缀的搜索算法的基本思路是要设定一个滑动的窗口，然后让它沿着文本移动进行匹配，事实上这种方法最大的难点也就在于如何安全地移动窗口，以避免错过正确的匹配。</p>
+<h2>Boyer-Moore 算法</h2>
+<p>我们先设定三个移动窗口函数 <span class="math">\(d_1,d_2,d_3\)</span> 来用来分别对应后面提到的移动窗口时候面对的三种不同的情况。这里我们不妨假设已经读入了一个既是窗口中文本的后缀，也是模式串 <span class="math">\(p\)</span> 的子串的字符串 <span class="math">\(p_0\)</span>，以及恰好下面即将读入的文本中的字符串 <span class="math">\(\alpha\)</span> 与 <span class="math">\(p\)</span> 中的下一个字符 <span class="math">\(\beta\)</span> 不一样。</p>
+<p>我们先来看第一种情况，后缀 <span class="math">\(p_0\)</span> 在模式串 <span class="math">\(p\)</span> 的多个位置有出现，假设最右出现的位置为 <span class="math">\(j\)</span>，这里不包括在模式串末尾的情况。此时我们已经匹配好的后缀 <span class="math">\(p_0 = p_{j-|p_0|+1}…p_j\)</span>，以及安全的移动方法是，将窗口往右移动 <span class="math">\(m-j\)</span> 个字符，才能使得文本中的 <span class="math">\(p_0\)</span> 与 <span class="math">\(p\)</span> 下一个 <span class="math">\(p_0\)</span> 的出现的位置对齐。对于 <span class="math">\(p\)</span> 的每一个后缀，都需要计算它到它下一次出现位置之间的距离，这个距离我们就用前面定义的窗口移动函数 <span class="math">\(d_1\)</span> 来表示。显然的一个特例是，如果 <span class="math">\(p_0\)</span> 在 <span class="math">\(p\)</span> 中只出现一次，那么此时 <span class="math">\(d_1(p_0) = m\)</span>。</p>
+<p>再说第二种情况，此时后缀 <span class="math">\(p_0\)</span> 不出现 <span class="math">\(p\)</span> 中的其他位置。此时考虑情况如下图，即 <span class="math">\(p_0\)</span> 的一个后缀 <span class="math">\(p_0’\)</span> 同时也是 <span class="math">\(p\)</span> 的一个前缀。显然，在这种情况下，如果直接移动整个窗口的大小是很危险的动作，可能会错过正确的匹配。于是我们需要对模式串的所有后缀计算第二个函数 <span class="math">\(d_2\)</span>，即对于 <span class="math">\(p\)</span> 的每一个后缀 <span class="math">\(p_0, p_1,…p_i,…,p_n\)</span> 来说，<span class="math">\(p_i\)</span> 会存在一个 <span class="math">\(p_i’\)</span>，它是 <span class="math">\(p\)</span> 的前缀和 <span class="math">\(p_i\)</span> 的后缀的重合体中长度最长的那个。</p>
+<p>最后再来说存在的第三种情况，当我们的搜索窗口从后向前移动时，在文本字符 <span class="math">\(\alpha\)</span> 处不能成功匹配。此时如果用第一种情况下的 <span class="math">\(d_1\)</span> 进行窗口移动，并且 <span class="math">\(p\)</span> 中对应的字符并不是 <span class="math">\(\alpha\)</span>，而是 <span class="math">\(\beta\)</span>，那么将会对新的搜索窗口多一次验证，这显然是冗余的。我们的第三种移动函数 <span class="math">\(d_3\)</span> 也就应运而生了。</p>
+<h2>Horpool 算法</h2>
+<h2>字符串集匹配</h2>
+<h2>动名词组合</h2>
+<h2>参考文献</h2>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
         linebreak = "false";
@@ -162,74 +179,11 @@
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 </script>
-                                <p class="readmore">
-                                    <a class="btn btn-small btn-info" href="/pattern-matching-problem.html">Read more...</a>
-                                </p>
-                            </div><!-- /.entry-content -->
-                            <hr/>
-                        </article>
-                    </li>
-                    <li>
-                        <article>
-                            <header>
-                                <h1 class="entry-title">
-                                    <a href="/decision-tree-in-anti-spam.html" rel="bookmark" title="Permalink to 决策树算法在果壳网反垃圾系统中的实践">
-                                       决策树算法在果壳网反垃圾系统中的实践
-                                    </a>
-                                </h1>
-                            </header>
-                            <div class="entry-content">
-<footer class="post-info">
-    <address class="vcard author">
-        by <a class="url fn" href="/author/xiao-xiong-mao.html">小熊猫</a>
-    </address>
 
-    in <a href="/category/suan-fa-tuan-dui.html">算法团队</a>
+      </div><!-- /.entry-content -->
 
-    on 2015-09-28
-
-        |
-        tags:         <a href="/tag/suan-fa.html">算法</a>
-        <a href="/tag/ji-cheng-xue-xi.html">集成学习</a>
-        <a href="/tag/ji-qi-xue-xi.html">机器学习</a>
-        <a href="/tag/jue-ce-shu.html">决策树</a>
-
-
-
-    
-</footer><!-- /.post-info -->                                <h2>摘要</h2>
-<p>决策树（Decision Tree）是机器学习领域中一种基本的分类与回归方法，在分类的问题中，表示基于特征对实例进行分类的过程。粗浅地看，可以认为是一组特定 if-else 规则的集合，也可以认为是定义在特征空间和类空间上的条件概率分布。由于算法既简单易懂，又十分高效，所以在实际应用中非常广泛。本文主要介绍决策树算法在果壳网反垃圾系统中的应用与实践心得。</p>
-<h2>背景问题</h2>
-<p>果壳网社区项目是目前果壳的主要流量来源，包含有果壳小组，果壳问答，知性社区，MOOC 社区等。社区内部有大量的垃圾用户，频繁发帖，给运营人员的工作带来了很大的压力，也影响了社区正常的环境。</p>
-<p><img alt="test" src="../images/algo1.png" /></p>
-<p>如何区分正常用户和 spammer 可以看成是一个分类问题，准确地说，其实是一个二分类问题。常用的分类机器学习算法都可以使用，包括但不限于SVM，逻辑回归，朴素贝叶斯。由于这些分类算法都属于有监督的机器学习，因此必须要使用一些已经标注好的样本进行训练。毫无疑问，现有的用户信息都在 log 中，我们究竟要取其中的哪些作为用户的 feature 来训练，以及是否还需要人工标注，都是接下来需要面临的特征工程问题。</p>
-<p>对 raw data ...</p>
-                                <p class="readmore">
-                                    <a class="btn btn-small btn-info" href="/decision-tree-in-anti-spam.html">Read more...</a>
-                                </p>
-                            </div><!-- /.entry-content -->
-                            <hr/>
-                        </article>
-                    </li>
-                    </ol><!-- /#posts-list -->
-<p class="paginator">
-    Page 1 / 1
-</p>
-                </section><!-- /#content -->
-</div>
-<div class="span3">
-    <section id="sidebar">
-            <div>
-                <h2>Browse content by</h2>
-                <ul class="fa-ul">
-                <li><a href="/categories.html"><i class="fa-li fa fa-tags"></i> Categories</a></li>
-                <li><a href="/archives.html"><i class="fa-li fa fa-calendar"></i> Dates</a></li>
-                <li><a href="/tags.html"><i class="fa-li fa fa-tag"></i> Tags</a></li>
-
-                </ul>
-            </div><!-- /.browse -->
-<!-- /.Tags -->
-    </section><!-- /#sidebar -->
+    </article>
+  </section>
 </div>
             </div>
         </div>
