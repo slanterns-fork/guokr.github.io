@@ -105,11 +105,11 @@
 <h2>对问题的重定义</h2>
 <p>一个字符串是一个定义在有限字母集合 <span class="math">\(\sum\)</span> 上的字符序列。例如 <span class="math">\(ABCDABC\)</span> 就是字母表 <span class="math">\(\sum = \{A,B,C,D\}\)</span> 上的一个字符串。那么字符串匹配问题实际上就是在一个大的字符串 <span class="math">\(T\)</span> 中搜索某个特定的字符串 <span class="math">\(p\)</span> 出现的位置。为方便表述，在这里我们不妨把 <span class="math">\(T\)</span> 称作文本，<span class="math">\(p\)</span> 称作模式串，长度为 <span class="math">\(m\)</span>，以及 <span class="math">\(T\)</span> 和 <span class="math">\(p\)</span> 都定义在同一个字母表 <span class="math">\(\sum\)</span> 上。</p>
 <p>对于单个的字符串问题，根据搜索模式串的方式的不同，一般来说可以归结为三种思路：</p>
-<h4>基于前缀</h4>
+<h3>基于前缀</h3>
 <p>从文本中挨个读字符，每读一个字符就更新相应的变量，检查是否存在一个可能的匹配。这种思路中最为典型的就是大名鼎鼎 <a href="">KMP 算法</a>以及后来居上的 <a href="">Shift-Or</a>。</p>
-<h4>基于后缀</h4>
+<h3>基于后缀</h3>
 <p>先设定一个滑动的窗口 <span class="math">\(W\)</span>，滑动窗口沿着文本 <span class="math">\(T\)</span> 移动，对于任意位置上的窗口，在窗口中从后向前搜索窗口中的文本和模式串 <span class="math">\(p\)</span> 的公共后缀。<a href="">BM 算法</a>就是使用了这种思想，但是一般情况下，BM 的一个简化版本 <a href="">Horspool</a> 性能更好，同时也有着非常广泛的应用，通常我们的浏览器、编辑器中的搜索功能都是它的实现。</p>
-<h4>基于子串</h4>
+<h3>基于子串</h3>
 <p>和第二种方法类似，这里也使用了滑动窗口的概念，也是从后向前搜索。有区别的地方是，搜索目标变成了是窗口中文本的最长后缀，显然它同时也是模式串 <span class="math">\(p\)</span> 的一个子串。最早使用这个思想的是 <a href="">BDM 算法</a>，如果模式串 <span class="math">\(p\)</span> 稍短，可以将它改进为 <a href="">BNDM</a>。</p>
 <p>鉴于基于前缀的搜索比较慢，以及基于子串的搜索方法只适合非常长的字符串，而这与我们的敏感词匹配要求并不复合，因此我们选择基于后缀的搜索方法。</p>
 <p>前面提到这种基于后缀的搜索算法的基本思路是要设定一个滑动的窗口，然后让它沿着文本移动进行匹配，事实上这种方法最大的难点也就在于如何安全地移动窗口，以避免错过正确的匹配。</p>
@@ -117,9 +117,43 @@
 <p>我们先设定三个移动窗口函数 <span class="math">\(d_1,d_2,d_3\)</span> 来用来分别对应后面提到的移动窗口时候面对的三种不同的情况。这里我们不妨假设已经读入了一个既是窗口中文本的后缀，也是模式串 <span class="math">\(p\)</span> 的子串的字符串 <span class="math">\(p_0\)</span>，以及恰好下面即将读入的文本中的字符串 <span class="math">\(\alpha\)</span> 与 <span class="math">\(p\)</span> 中的下一个字符 <span class="math">\(\beta\)</span> 不一样。</p>
 <p>我们先来看第一种情况，后缀 <span class="math">\(p_0\)</span> 在模式串 <span class="math">\(p\)</span> 的多个位置有出现，假设最右出现的位置为 <span class="math">\(j\)</span>，这里不包括在模式串末尾的情况。此时我们已经匹配好的后缀 <span class="math">\(p_0 = p_{j-|p_0|+1}…p_j\)</span>，以及安全的移动方法是，将窗口往右移动 <span class="math">\(m-j\)</span> 个字符，才能使得文本中的 <span class="math">\(p_0\)</span> 与 <span class="math">\(p\)</span> 下一个 <span class="math">\(p_0\)</span> 的出现的位置对齐。对于 <span class="math">\(p\)</span> 的每一个后缀，都需要计算它到它下一次出现位置之间的距离，这个距离我们就用前面定义的窗口移动函数 <span class="math">\(d_1\)</span> 来表示。显然的一个特例是，如果 <span class="math">\(p_0\)</span> 在 <span class="math">\(p\)</span> 中只出现一次，那么此时 <span class="math">\(d_1(p_0) = m\)</span>。</p>
 <p>再说第二种情况，此时后缀 <span class="math">\(p_0\)</span> 不出现 <span class="math">\(p\)</span> 中的其他位置。此时考虑情况如下图，即 <span class="math">\(p_0\)</span> 的一个后缀 <span class="math">\(p_0’\)</span> 同时也是 <span class="math">\(p\)</span> 的一个前缀。显然，在这种情况下，如果直接移动整个窗口的大小是很危险的动作，可能会错过正确的匹配。于是我们需要对模式串的所有后缀计算第二个函数 <span class="math">\(d_2\)</span>，即对于 <span class="math">\(p\)</span> 的每一个后缀 <span class="math">\(p_0, p_1,…p_i,…,p_n\)</span> 来说，<span class="math">\(p_i\)</span> 会存在一个 <span class="math">\(p_i’\)</span>，它是 <span class="math">\(p\)</span> 的前缀和 <span class="math">\(p_i\)</span> 的后缀的重合体中长度最长的那个。</p>
-<p>最后再来说存在的第三种情况，当我们的搜索窗口从后向前移动时，在文本字符 <span class="math">\(\alpha\)</span> 处不能成功匹配。此时如果用第一种情况下的 <span class="math">\(d_1\)</span> 进行窗口移动，并且 <span class="math">\(p\)</span> 中对应的字符并不是 <span class="math">\(\alpha\)</span>，而是 <span class="math">\(\beta\)</span>，那么将会对新的搜索窗口多一次验证，这显然是冗余的。我们的第三种移动函数 <span class="math">\(d_3\)</span> 也就应运而生了。</p>
-<h2>Horpool 算法</h2>
-<h2>字符串集匹配</h2>
+<p>最后再来说存在的第三种情况，当我们的搜索窗口从后向前移动时，在文本字符 <span class="math">\(\alpha\)</span> 处不能成功匹配。此时如果用第一种情况下的 <span class="math">\(d_1\)</span> 进行窗口移动，并且 <span class="math">\(p\)</span> 中对应的字符并不是 <span class="math">\(\alpha\)</span>，而是 <span class="math">\(\beta\)</span>，那么将会对新的搜索窗口多一次验证，这显然是冗余的。我们的第三种移动函数 <span class="math">\(d_3\)</span> 也就应运而生了。<span class="math">\(d_3\)</span> 可以用来保证下一次验证时文本字符 <span class="math">\(\alpha\)</span> 与 <span class="math">\(p\)</span> 中的 <span class="math">\(\alpha\)</span> 对齐。我们不妨将 <span class="math">\(d_3(\alpha)\)</span> 记作 <span class="math">\(\alpha\)</span> 在 <span class="math">\(p\)</span> 中最右的位置到末尾的距离。当然，倘若 <span class="math">\(\alpha\)</span> 在 <span class="math">\(p\)</span> 中并没有出现，那么 <span class="math">\(d_3(\alpha) = m\)</span>。</p>
+<p>有了这三种情况的拆分，BM 算法整体就相对好理解了。回到开始，即将读入的文本中的字符串 <span class="math">\(\alpha\)</span> 与 <span class="math">\(p\)</span> 中的下一个字符 <span class="math">\(\beta\)</span> 不一样，窗口移动的距离就由这三个函数来决定：</p>
+<ul>
+<li>比较 <span class="math">\(d_1(p_0)\)</span> 与 <span class="math">\(d_2(p_0’)\)</span>，将它们中较大的那一个用作窗口移动的距离，因为我们期望的是 <span class="math">\(p_0\)</span> 和它在 <span class="math">\(p\)</span> 中下一次出现的位置对齐；</li>
+<li>取上面的结果，并与 <span class="math">\(m-d_2(p_0)\)</span> 来作比较，将它们中较小的用作窗口移动的距离，这是很显然的，因为 <span class="math">\(m-d_2(p_0)\)</span> 已经是最大可以接受的安全距离。</li>
+</ul>
+<p>BM 的搜索时间复杂是 <span class="math">\(O(mn)\)</span>，总的来说还算不错，但是比较麻烦的地方在于需要计算 <span class="math">\(d_1, d_2, d_3\)</span>，下面介绍它的一个简化版本，也是它应用最多的一个版本，Horspool。</p>
+<h2>Horspool 算法</h2>
+<p>Horspool 相对于 BM 最大的简化的地方是使用了一个统计上的经验，即，在面对字母表的 <span class="math">\(\sum\)</span> 较大的时候，<span class="math">\(d_3\)</span> 总是有很大概率产生最大的移动距离。基于此，我们不妨就让 <span class="math">\(d_3\)</span> 能够产生更大的移动距离。</p>
+<p>下面对算法整体的流程简述：</p>
+<hr />
+<p><strong>输入</strong>：</p>
+<p><strong>输出</strong>：</p>
+<p><strong>步骤</strong>：</p>
+<hr />
+<h2>多字符串匹配</h2>
+<p>回到开头，我们的问题其实是在一个给定的敏感词列表中进行排查，即表中的所有字符串都不能在文本中出现，即<strong>字符串集匹配</strong>，或者<strong>多字符串匹配</strong>问题。</p>
+<p>其实单字符出匹配问题可以很自然地扩展到这样的多字符串匹配问题，<span class="math">\(P = \{p_1,p_2,…,p_r\}\)</span> 就是一组我们要搜索的字符串。在系统分析这个问题之前，我们先不妨做一些定义：
+<span class="math">\(p_i\)</span> 是定义在一个有限字母表 <span class="math">\(\sum\)</span> 上的字符串，<span class="math">\(p_i=p_{i1}p_{i2}...p_{im_i}\)</span>。记 <span class="math">\(|P|\)</span> 为 <span class="math">\(P\)</span> 中所有字符串长度之和，即 <span class="math">\(|P| = \sum_{i=1}^{r}|p^i|=\sum_{i=1}^{r}m_i\)</span>，同时 <span class="math">\(l_{min}\)</span> 和 <span class="math">\(l_{max}\)</span> 分别是 <span class="math">\(P\)</span> 中最短和最长模式串的长度，目标文本 <span class="math">\(T = t_1t_2…t_n\)</span>。</p>
+<p>注意 <span class="math">\(P\)</span> 中的少数字符串可能是集合中其他字符串的前后缀，例如<strong>涉枪涉爆</strong>类别中既有「枪弩」也有「气枪弩」，也就是说如果「枪弩」被匹配成功，显然「气枪弩」也是会被匹配出来。因此，模式串总的出现次数最大可能为 <span class="math">\(rn\)</span>。那么我们真正的目标实际上是所有满足 <span class="math">\(p_i=t_{j-|p_i|+1}…t_j\)</span> 的整数对 <span class="math">\((i,j)\)</span>。</p>
+<p>其实对于多字符串匹配的一个最简单的思路就是使用前面的单字符串匹配方法，遍历整个集合即可。但是这样会直接搜索的时间复杂度为 <span class="math">\(O(rn)\)</span>，以及还有数据预处理阶段的大量时间。显然这么做是笨拙的，也是低效的，我们下面对前面使用的单字符串匹配算法进行一定的扩展，以达到性能上的优化。</p>
+<p>虽然单字符串匹配问题中的三种思路都是可以扩展，但是对于我们的问题后缀搜索效率最高，故将我们的主要工作重心放在基于后缀的字符串匹配问题的扩展上。</p>
+<h3>Trie Tree</h3>
+<p>我们先介绍一种称之为前缀树的数据结构，或者叫字典树，trie tree，之所以要先介绍它首先是因为它能够帮助理解后面的推导与演算，还有一个重要的原因是前缀树在非常多的字符串问题中扮演了极其重要的角色。</p>
+<p>那我们就这个项目举例来看，假设集合 <span class="math">\(P = \{p_1,p_2,…,p_r\}\)</span> 对应的前缀树结构其实是一棵有向的有根树，每个从根节点开始到叶子节点结束的路径上的所有标号构成的字符串，都对应着集合 <span class="math">\(P\)</span> 中的某一个元素 <span class="math">\(p_i\)</span>，反过来，集合 <span class="math">\(P\)</span> 中的每一个元素也都对应着前缀树中的一条从 root 到叶子节点的路径。对于前缀树来说，倘若一个结点 <span class="math">\(q\)</span> 对应这一个 <span class="math">\(P\)</span> 中的某个元素，那我们我们就将它称之为可以接受的状态，函数 <span class="math">\(F(q)\)</span> 包含了 <span class="math">\(q\)</span> 所对应的集合 <span class="math">\(P\)</span> 中的所有字符串。</p>
+<h3>自动机</h3>
+<p>在我们的计算机科学中，自动机这个词其实意义很多。我们下面单就字符串匹配领域来说说自动机，照例，我们先给出一些定义。</p>
+<p>一个有限状态自动机 <span class="math">\(\mathcal{A}\)</span>，或者简称做自动机，一般是由：</p>
+<ul>
+<li>一个有限的状态集合 <span class="math">\(\mathcal{Q}\)</span></li>
+<li>一个初始状态 <span class="math">\(\mathcal{s} \in \mathcal{Q}\)</span></li>
+<li>一个输入字母表 <span class="math">\(\sum\)</span>（非空有限的状态集合）</li>
+<li>一个可以被接受的状态的集合 <span class="math">\(\mathcal{F} \subseteq \mathcal{Q}\)</span></li>
+<li>一个状态转移函数 <span class="math">\(\delta: \mathcal{Q} \times \sum \rightarrow \mathcal{Q}（例如：\delta (q,\sigma) = p,(p,q \in \mathcal{Q}, \sigma\in\sum）\)</span></li>
+</ul>
+<p>这样，自动机 <span class="math">\(\mathcal{A} = (\mathcal{Q}, \sum, \mathcal{s}, \mathcal{F}, \delta)\)</span></p>
+<p>在实际应用中，根据状态转移函数的形式大抵可以分为两类：一类称之为非确定的有限自动机，它的状态转移函数 <span class="math">\(\delta\)</span> 将某一个状态 <span class="math">\(q\)</span> 通过一个给定字符 <span class="math">\(\sigma\)</span> 关联到多于1个的状态，即 <span class="math">\(\delta(q,\sigma) = \{q_1,q_2,…,q_k\}, k&gt;1\)</span>，或者某些状态装一能被标记为 <span class="math">\(\varepsilon\)</span>。此时，我们的状态转移函数 <span class="math">\(\sigma\)</span> 就可以用三元组 <span class="math">\(\Delta = \{(q,\sigma,q’)\}, q\in\mathcal{Q}, \sigma\in\sum， q’ \in \delta(q,\sigma)\}\)</span> 的集合来表示。</p>
 <h2>动名词组合</h2>
 <h2>参考文献</h2>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
