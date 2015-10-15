@@ -128,9 +128,16 @@
 <p>Horspool 相对于 BM 最大的简化的地方是使用了一个统计上的经验，即，在面对字母表的 <span class="math">\(\sum\)</span> 较大的时候，<span class="math">\(d_3\)</span> 总是有很大概率产生最大的移动距离。基于此，我们不妨就让 <span class="math">\(d_3\)</span> 能够产生更大的移动距离。</p>
 <p>下面对算法整体的流程简述：</p>
 <hr />
-<p><strong>输入</strong>：</p>
-<p><strong>输出</strong>：</p>
+<p><strong>输入</strong>：模式串 <span class="math">\(p = p_1p_2…p_m\)</span>；目标文本 <span class="math">\(T = t_1t_2…t_n\)</span>；</p>
+<p><strong>输出</strong>：窗口指针位置 <span class="math">\(pos\)</span>；</p>
 <p><strong>步骤</strong>：</p>
+<ol>
+<li>数据预处理阶段，主要是做一些存储。对所有 <span class="math">\(c \in \sum\)</span>，有 <span class="math">\(d[c] \leftarrow m\)</span>；对所有 <span class="math">\(j \in 1,2,…,m-1\)</span>，有 <span class="math">\(d[p_j] \leftarrow m-j\)</span>；</li>
+<li>搜索阶段。首先将当前位置 <span class="math">\(pos\)</span> 置为0，检查 <span class="math">\(pos \leqslant n-m\)</span>，倘若是，那么 <span class="math">\(j \leftarrow m\)</span>；然后去 3，如果否，跳转到 5；</li>
+<li>检查 <span class="math">\(j&gt;0\)</span> 且 <span class="math">\( t_{pos} == p_j\)</span>，倘若是，有 <span class="math">\(j \leftarrow j-1\)</span>，然后去 4；如果否，跳转到 5；</li>
+<li>检查如果 <span class="math">\(j == 0\)</span>，然后记录下匹配位置 <span class="math">\(pos+1\)</span>，跳转到 5；</li>
+<li>窗口位置移动，即当前位置的指针执行移动：<span class="math">\(pos \leftarrow pos+d[t_{pos+m}]\)</span>，后跳转 2；</li>
+</ol>
 <hr />
 <h2>多字符串匹配</h2>
 <p>回到开头，我们的问题其实是在一个给定的敏感词列表中进行排查，即表中的所有字符串都不能在文本中出现，即<strong>字符串集匹配</strong>，或者<strong>多字符串匹配</strong>问题。</p>
@@ -162,7 +169,7 @@
 <p>穿插着了解了前缀树和自动机之后，我们回到上文继续讨论基于后缀的多字符串匹配问题，我们这里主要的思想是对使用后缀匹配思想单字符串的匹配算法的扩展。这样的第一个算法对 BM 的扩展， Commentz-Walter，当然也有对 Hospool 的扩展，下面我们逐一讨论。</p>
 <h3>Commentz-Walter</h3>
 <p>Commentz-Walter（以下简称 CW 算法） 算法是对 BM 算法的扩展，它的应用非常广泛，例如 UNIX 下的非常著名的搜索程序 Grep 的第二个版本就是它的一个实现。</p>
-<p>CW 算法中用前缀树来表示 <span class="math">\(P=\{p_1,p_2,…,p_r\}\)</span> 的反转 <span class="math">\(P_{rv}=\{(p_1)_{rv},(p_1)_{rv},…,(p_r)_{rv}\}\)</span>，并用它来识别文本字符。由于这个算法性能差强人意，我们简单说说思想。在窗口移动过程中，指针 <span class="math">\(pos\)</span> 指向 <span class="math">\(l_{min}\)</span>，对于 <span class="math">\(pos\)</span> 的每个新位置，从 <span class="math">\(pos\)</span> 开始，从后向前识别文本 <span class="math">\(t_1t_2…t_{pos}\)</span> 的最长后缀 <span class="math">\(u\)</span>，使得 <span class="math">\(u\)</span> 也是某一个模式串的后缀，然后根据在多模式串集合上扩展的 BM 算法的三个函数 <span class="math">\(d_1,d_2\)</span> 和 <span class="math">\(d_3\)</span>，将 <span class="math">\(pos\)</span> 右移。以及对于前缀树的每个状态，都需要计算 <span class="math">\(d_1\)</span> 和 <span class="math">\(d_2\)</span>，当最长后缀 <span class="math">\(u\)</span> 在可以接受的状态集合中被识别出来并抵达状态 <span class="math">\(q\)</span> 时，再根据 <span class="math">\(d_1\)</span> 和 <span class="math">\(d_2\)</span> 进行移动。</p>
+<p>CW 算法中用前缀树来表示 <span class="math">\(P=\{p_1,p_2,…,p_r\}\)</span> 的反转 <span class="math">\(P_{rv}=\{p_{1,rv},p_{2,rv},…,p_{r,rv}\}\)</span>，并用它来识别文本字符。由于这个算法性能差强人意，我们简单说说思想。在窗口移动过程中，指针 <span class="math">\(pos\)</span> 指向 <span class="math">\(l_{min}\)</span>，对于 <span class="math">\(pos\)</span> 的每个新位置，从 <span class="math">\(pos\)</span> 开始，从后向前识别文本 <span class="math">\(t_1t_2…t_{pos}\)</span> 的最长后缀 <span class="math">\(u\)</span>，使得 <span class="math">\(u\)</span> 也是某一个模式串的后缀，然后根据在多模式串集合上扩展的 BM 算法的三个函数 <span class="math">\(d_1,d_2\)</span> 和 <span class="math">\(d_3\)</span>，将 <span class="math">\(pos\)</span> 右移。以及对于前缀树的每个状态，都需要计算 <span class="math">\(d_1\)</span> 和 <span class="math">\(d_2\)</span>，当最长后缀 <span class="math">\(u\)</span> 在可以接受的状态集合中被识别出来并抵达状态 <span class="math">\(q\)</span> 时，再根据 <span class="math">\(d_1\)</span> 和 <span class="math">\(d_2\)</span> 进行移动。</p>
 <ul>
 <li><span class="math">\(d_1(q)\)</span> 是使得 <span class="math">\(u = \mathcal{L}(q)\)</span> 与某一个模式串的子串对齐的最小移动距离 <span class="math">\(p_j \in \mathcal{P}\)</span></li>
 <li><span class="math">\(d_2(q)\)</span> 是使得 <span class="math">\(u = \mathcal{L}(q)\)</span> 的一个后缀与某一个模式串的前缀相匹配的最小移动距离 <span class="math">\(p_j \in \mathcal{P}\)</span></li>
@@ -182,9 +189,19 @@ d_2[q]
 <p>SH 算法的基本流程如图，假设当前文本位置 <span class="math">\(pos\)</span> 初始化为 <span class="math">\(l_{min}\)</span>，从 <span class="math">\(pos\)</span> 开始，从后向前读入文本字符。这里使用所有模式串反转 <span class="math">\(p_{rv}\)</span> 构建的前缀树来完成识别过程，如果到达状态 <span class="math">\(s_0\)</span> 恰好属于可以接受的结束状态，就标记下一个匹配，假设当无法继续识别读入的文本字符，就根据第一个读入的文本字符 <span class="math">\(\beta\)</span> 来决定 <span class="math">\(pos\)</span> 的移动。<span class="math">\(pos\)</span> 移动到使得 <span class="math">\(\beta\)</span> 与它在前缀树中下一次出现位置对齐的地方。一个显然的特例是，如果 <span class="math">\(\beta\)</span> 不再重复出现，那么就直接移动 <span class="math">\(l_{min}\)</span> 即可。</p>
 <p>下面简述 SH 算法的流程：</p>
 <hr />
-<p><strong>输入</strong>：</p>
-<p><strong>输出</strong>：</p>
+<p><strong>输入</strong>：模式串集 <span class="math">\(P = \{p_1,p_2,…,p_r\}\)</span>，目标文本 <span class="math">\(T=t_1t_2…t_n\)</span>；</p>
+<p><strong>输出</strong>：窗口指针位置 <span class="math">\(pos\)</span>；</p>
 <p><strong>步骤</strong>：</p>
+<ol>
+<li>预处理阶段。<span class="math">\(HO \leftarrow Trie(P_{rv}=\{p_{1,rv},p_{2,rv},…,p_{r,rv}\})\)</span>，其中这里的 <span class="math">\(\delta_{HO}\)</span> 是状态转移函数；对于 <span class="math">\(c\in\sum\)</span>，有 <span class="math">\(d[c]\leftarrow l_{min}\)</span>；对于所有 <span class="math">\(j\in 1,2,…,r\)</span>，有
+<div class="math">$$d[p_{jk}]\leftarrow min(d[p_{jk}], m_j-k), k\in 1,2,…,m_j-1$$</div>
+</li>
+<li>初始化当前指针位置，<span class="math">\(pos \leftarrow l_{min}\)</span>，检查 <span class="math">\(pos \leqslant n\)</span>，如果是，<span class="math">\(j \leftarrow 0\)</span>，也即从 <span class="math">\(HO\)</span> 中拿到它的初始状态，然后跳转到 3，如果不是，跳转到 6；</li>
+<li>检查如果 <span class="math">\(pos - j &gt; 0\)</span> 且 <span class="math">\(\delta_{HO}(t_{pos-j}, Current)\neq\theta\)</span>，跳转到 4，如果不是，跳转到 6；</li>
+<li>检查 <span class="math">\(Current\)</span> 是否是可以被接受的终止状态，如果是则记录下 $\mathcal{F}(Current, pos)，如果不是，跳转到 5；</li>
+<li>执行状态转移 <span class="math">\(Current \leftarrow \delta_{HO}(t_{pos-j}, Current)\)</span>，同时 <span class="math">\(j \leftarrow j+1\)</span>；</li>
+<li>位置指针转移 <span class="math">\(pos \leftarrow pos + d[t_{pos}]\)</span>；</li>
+</ol>
 <hr />
 <p>SH 算法的复杂度是 <span class="math">\(O(n\times l_{max})\)</span>，一般来说，它只适合模式串集合很小，但是字母表 <span class="math">\(\sum\)</span> 却很大的场合。</p>
 <h3>Wu-Manber</h3>
