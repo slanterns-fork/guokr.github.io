@@ -105,7 +105,7 @@
 <p>对 raw data 的清洗和挖掘是整个机器学习系统的第一个关键性步骤，对算法的设计和结果都会产生重大的影响，会另写一篇详述，在此不表。</p>
 <p>不妨假设我们得到的训练样本集合：
 </p>
-<div class="math">$$D=(x_1,y_1), (x_2,y_2),…,(x_N,y_N)$$</div>
+<div class="math">$$D=\{(x_1,y_1), (x_2,y_2),…,(x_N,y_N)\}$$</div>
 <p>
 这里，<span class="math">\(x_i\)</span> 是一个 <span class="math">\(m\)</span> 维的向量，<span class="math">\(x_i=[x_{1i},x_{2i},…,x_{mi}]\)</span>，因为是二分类问题，所以 <span class="math">\(y\)</span> 将会是在 <span class="math">\({0,1}\)</span> 中取值。因此问题转化为我们需要寻找一个模型，而它恰恰是从训练<span class="math">\(D\)</span>中样本 <span class="math">\((x_i,y_i)\)</span> 所带来的信息学习而来。具体地说，对于一个样本输入 <span class="math">\(x_i\)</span> 来说，我们的模型 <span class="math">\(y=f(x)\)</span> 会给出一个输出 <span class="math">\(f(x_i)\)</span>，而训练数据集中对应的输出是 <span class="math">\(y_i\)</span>，如果这个模型有很好的预测能力，训练样本的输出 <span class="math">\(y_i\)</span> 应该与模型的输出 <span class="math">\(f(x_i)\)</span> 一致。</p>
 <p>在此处的二分类问题中，我们的损失函数是0-1损失，所以测试误差就变成了常见的测试数据集上的误差率:</p>
