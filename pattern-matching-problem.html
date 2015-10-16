@@ -106,11 +106,11 @@
 <p>一个字符串是一个定义在有限字母集合 <span class="math">\(\sum\)</span> 上的字符序列。例如 <span class="math">\(ABCDABC\)</span> 就是字母表 <span class="math">\(\sum = \{A,B,C,D\}\)</span> 上的一个字符串。那么字符串匹配问题实际上就是在一个大的字符串 <span class="math">\(T\)</span> 中搜索某个特定的字符串 <span class="math">\(p\)</span> 出现的位置。为方便表述，在这里我们不妨把 <span class="math">\(T\)</span> 称作文本，<span class="math">\(p\)</span> 称作模式串，长度为 <span class="math">\(m\)</span>，以及 <span class="math">\(T\)</span> 和 <span class="math">\(p\)</span> 都定义在同一个字母表 <span class="math">\(\sum\)</span> 上。</p>
 <p>对于单个的字符串问题，根据搜索模式串的方式的不同，一般来说可以归结为三种思路：</p>
 <h3>基于前缀</h3>
-<p>从文本中挨个读字符，每读一个字符就更新相应的变量，检查是否存在一个可能的匹配。这种思路中最为典型的就是大名鼎鼎 <a href="">KMP 算法</a>以及后来居上的 <a href="">Shift-Or</a>。</p>
+<p>从文本中挨个读字符，每读一个字符就更新相应的变量，检查是否存在一个可能的匹配。这种思路中最为典型的就是大名鼎鼎算法 <a href="https://en.wikipedia.org/wiki/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm">KMP</a> 以及后来居上的 <a href="https://en.wikipedia.org/wiki/Bitap_algorithm">Shift-Or</a>。</p>
 <h3>基于后缀</h3>
-<p>先设定一个滑动的窗口 <span class="math">\(W\)</span>，滑动窗口沿着文本 <span class="math">\(T\)</span> 移动，对于任意位置上的窗口，在窗口中从后向前搜索窗口中的文本和模式串 <span class="math">\(p\)</span> 的公共后缀。<a href="">BM 算法</a>就是使用了这种思想，但是一般情况下，BM 的一个简化版本 <a href="">Horspool</a> 性能更好，同时也有着非常广泛的应用，通常我们的浏览器、编辑器中的搜索功能都是它的实现。</p>
+<p>先设定一个滑动的窗口 <span class="math">\(W\)</span>，滑动窗口沿着文本 <span class="math">\(T\)</span> 移动，对于任意位置上的窗口，在窗口中从后向前搜索窗口中的文本和模式串 <span class="math">\(p\)</span> 的公共后缀。<a href="https://en.wikipedia.org/wiki/Boyer%E2%80%93Moore_string_search_algorithm">BM 算法</a> 就是使用了这种思想，但是一般情况下，BM 的一个简化版本 <a href="https://en.wikipedia.org/wiki/Boyer%E2%80%93Moore%E2%80%93Horspool_algorithm">Horspool</a> 性能更好，同时也有着非常广泛的应用，通常我们的浏览器、编辑器中的搜索功能都是它的实现。</p>
 <h3>基于子串</h3>
-<p>和第二种方法类似，这里也使用了滑动窗口的概念，也是从后向前搜索。有区别的地方是，搜索目标变成了是窗口中文本的最长后缀，显然它同时也是模式串 <span class="math">\(p\)</span> 的一个子串。最早使用这个思想的是 <a href="">BDM 算法</a>，如果模式串 <span class="math">\(p\)</span> 稍短，可以将它改进为 <a href="">BNDM</a>。</p>
+<p>和第二种方法类似，这里也使用了滑动窗口的概念，也是从后向前搜索。有区别的地方是，搜索目标变成了是窗口中文本的最长后缀，显然它同时也是模式串 <span class="math">\(p\)</span> 的一个子串。最早使用这个思想的算法是 <a href="https://books.google.com/books?id=i3S9_GnHZwYC&amp;pg=PA825&amp;lpg=PA825&amp;dq=bdm+algorithm&amp;source=bl&amp;ots=nDkotcGoNx&amp;sig=sWTliqqyHY3g7dGdnP7Pz8YnxgM&amp;hl=en&amp;sa=X&amp;ved=0CCwQ6AEwAmoVChMI2bG-rqzGyAIVV9djCh2Qlwrf#v=onepage&amp;q=bdm%20algorithm&amp;f=false">BDM</a>，如果模式串 <span class="math">\(p\)</span> 稍短，可以将它改进为 <a href="http://www.dcc.uchile.cl/~gnavarro/ps/cpm98.pdf">BNDM</a>。</p>
 <p>鉴于基于前缀的搜索比较慢，以及基于子串的搜索方法只适合非常长的字符串，而这与我们的敏感词匹配要求并不复合，因此我们选择基于后缀的搜索方法。</p>
 <p>前面提到这种基于后缀的搜索算法的基本思路是要设定一个滑动的窗口，然后让它沿着文本移动进行匹配，事实上这种方法最大的难点也就在于如何安全地移动窗口，以避免错过正确的匹配。</p>
 <h2>Boyer-Moore 算法</h2>
@@ -129,6 +129,8 @@
 <p>BM 的搜索时间复杂是 <span class="math">\(O(mn)\)</span>，总的来说还算不错，但是比较麻烦的地方在于需要计算 <span class="math">\(d_1, d_2, d_3\)</span>，下面介绍它的一个简化版本，也是它应用最多的一个版本，Horspool。</p>
 <h2>Horspool 算法</h2>
 <p>Horspool 相对于 BM 最大的简化的地方是使用了一个统计上的经验，即，在面对字母表的 <span class="math">\(\sum\)</span> 较大的时候，<span class="math">\(d_3\)</span> 总是有很大概率产生最大的移动距离。基于此，我们不妨就让 <span class="math">\(d_3\)</span> 能够产生更大的移动距离。</p>
+<p>不妨用下图来说明，对于每个移动的搜索窗口，Horspool 将窗口中文本字符串 <span class="math">\(T\)</span> 的最后一个字符（图中的 <span class="math">\(\theta\)</span>）和模式串 <span class="math">\(p\)</span> 的最后一个字符 <span class="math">\(p[-1]\)</span> 进行比较。如果它们相等，则需要进行验证。过程是首先在搜索窗口中从后向前对 <span class="math">\(T\)</span> 和 <span class="math">\(p\)</span> 进行比较，直到出现完全相等（匹配成功），或者第一个不匹配（图中 <span class="math">\(\alpha\)</span> 和 <span class="math">\(\beta\)</span>），然后，无论是否成功，窗口的下一个移动距离是依据 <span class="math">\(p\)</span> 中 <span class="math">\(\theta\)</span> 的位置：
+<img alt="test" src="../images/bm4.jpg" /></p>
 <p>下面对算法整体的流程简述：</p>
 <hr />
 <p><strong>输入</strong>：模式串 <span class="math">\(p = p_1p_2…p_m\)</span>；目标文本 <span class="math">\(T = t_1t_2…t_n\)</span>；</p>
@@ -148,10 +150,13 @@
 <span class="math">\(p_i\)</span> 是定义在一个有限字母表 <span class="math">\(\sum\)</span> 上的字符串，<span class="math">\(p_i=p_{i1}p_{i2}...p_{im_i}\)</span>。记 <span class="math">\(|P|\)</span> 为 <span class="math">\(P\)</span> 中所有字符串长度之和，即 <span class="math">\(|P| = \sum_{i=1}^{r}|p^i|=\sum_{i=1}^{r}m_i\)</span>，同时 <span class="math">\(l_{min}\)</span> 和 <span class="math">\(l_{max}\)</span> 分别是 <span class="math">\(P\)</span> 中最短和最长模式串的长度，目标文本 <span class="math">\(T = t_1t_2…t_n\)</span>。</p>
 <p>注意 <span class="math">\(P\)</span> 中的少数字符串可能是集合中其他字符串的前后缀，例如<strong>涉枪涉爆</strong>类别中既有「枪弩」也有「气枪弩」，也就是说如果「枪弩」被匹配成功，显然「气枪弩」也是会被匹配出来。因此，模式串总的出现次数最大可能为 <span class="math">\(rn\)</span>。那么我们真正的目标实际上是所有满足 <span class="math">\(p_i=t_{j-|p_i|+1}…t_j\)</span> 的整数对 <span class="math">\((i,j)\)</span>。</p>
 <p>其实对于多字符串匹配的一个最简单的思路就是使用前面的单字符串匹配方法，遍历整个集合即可。但是这样会直接搜索的时间复杂度为 <span class="math">\(O(rn)\)</span>，以及还有数据预处理阶段的大量时间。显然这么做是笨拙的，也是低效的，我们下面对前面使用的单字符串匹配算法进行一定的扩展，以达到性能上的优化。</p>
-<p>虽然单字符串匹配问题中的三种思路都是可以扩展，但是对于我们的问题后缀搜索效率最高，故将我们的主要工作重心放在基于后缀的字符串匹配问题的扩展上。</p>
+<p>虽然单字符串匹配问题中的三种思路都是可以扩展，但是对于我们的问题后缀搜索效率最高，故将我们的主要工作重心放在基于后缀的字符串匹配问题的扩展上。
+<img alt="test" src="../images/bm5.jpg" /></p>
 <h3>Trie Tree</h3>
 <p>我们先介绍一种称之为前缀树的数据结构，或者叫字典树，trie tree，之所以要先介绍它首先是因为它能够帮助理解后面的推导与演算，还有一个重要的原因是前缀树在非常多的字符串问题中扮演了极其重要的角色。</p>
 <p>那我们就这个项目举例来看，假设集合 <span class="math">\(P = \{p_1,p_2,…,p_r\}\)</span> 对应的前缀树结构其实是一棵有向的有根树，每个从根节点开始到叶子节点结束的路径上的所有标号构成的字符串，都对应着集合 <span class="math">\(P\)</span> 中的某一个元素 <span class="math">\(p_i\)</span>，反过来，集合 <span class="math">\(P\)</span> 中的每一个元素也都对应着前缀树中的一条从 root 到叶子节点的路径。对于前缀树来说，倘若一个结点 <span class="math">\(q\)</span> 对应这一个 <span class="math">\(P\)</span> 中的某个元素，那我们我们就将它称之为可以接受的状态，函数 <span class="math">\(F(q)\)</span> 包含了 <span class="math">\(q\)</span> 所对应的集合 <span class="math">\(P\)</span> 中的所有字符串。</p>
+<p>下图就是一个简单例子，是 <span class="math">\(P = \{tee, tea, teacher\}\)</span> 所对应的 trie 结构。
+<img alt="test" src="../images/bm6.jpg" /></p>
 <h3>自动机</h3>
 <p>在计算机科学中，自动机这个词其实意义很多。我们下面单就字符串匹配领域来说说自动机，照例，我们先给出一些定义。</p>
 <p>一个有限状态自动机 <span class="math">\(\mathcal{A}\)</span>，或者简称做自动机，一般是由：</p>
@@ -164,10 +169,14 @@
 </ul>
 <p>这样，自动机 <span class="math">\(\mathcal{A} = (\mathcal{Q}, \sum, \mathcal{s}, \mathcal{F}, \delta)\)</span> 就用这样的五元组来表示。</p>
 <p>在实际应用中，根据状态转移函数的形式大抵可以分为两类：一类称之为非确定的有限自动机，它的状态转移函数 <span class="math">\(\delta\)</span> 将某一个状态 <span class="math">\(q\)</span> 通过一个给定字符 <span class="math">\(\sigma\)</span> 关联到多于1个的状态，即 <span class="math">\(\delta(q,\sigma) = \{q_1,q_2,…,q_k\}, k&gt;1\)</span>，或者某些状态装一能被标记为 <span class="math">\(\varepsilon\)</span>。此时，我们的状态转移函数 <span class="math">\(\sigma\)</span> 就可以用三元组 <span class="math">\(\Delta = \{(q,\sigma,q’)\}, q\in\mathcal{Q}, \sigma\in\sum， q’ \in \delta(q,\sigma)\}\)</span> 的集合来表示。另外一类则称之为确定的有限自动机，区别在于它的状态转移函数 <span class="math">\(\delta\)</span> 可以用一个部分函数 <span class="math">\(\delta：\mathcal{Q}\times\sum \rightarrow \mathcal{Q}\)</span> 来表示，如果 <span class="math">\(\delta(q,\sigma) = \{q’\}\)</span>，那么 <span class="math">\(\delta(q,\sigma) = q’\)</span>，下图给出了两个例子：</p>
+<p><img alt="test" src="../images/automaton1.jpg" /></p>
+<p>上图中给出了两种自动机的模型。其中 <span class="math">\(0\)</span> 是初始状态，灰色表示可以被接受的终止状态。左边的是非确定性的自动机，因为从状态 <span class="math">\(0\)</span> 通过 <span class="math">\(d\)</span> 或者 <span class="math">\(d\rightarrow a\rightarrow b\)</span> 到达状态 <span class="math">\(6\)</span>，即便是只通过 <span class="math">\(d\)</span> 的话，也可以达到 <span class="math">\(6\)</span> 或者 <span class="math">\(2\)</span>。而右图则是确定性的自动机，因为对于任何一个字符，每个状态都只能转移到一个状态。</p>
 <p>那么在这个自动机 <span class="math">\(\mathcal{A} = (\mathcal{Q}, \sum, \mathcal{s}, \mathcal{F}, \delta)\)</span> 中，如果将从状态 <span class="math">\(s\)</span> 到一个可以被接受的状态路径上的标记连起来可以得到的字符串则可以被自动机 <span class="math">\(\mathcal{A}\)</span> 识别。</p>
 <p>注意，在非确定的有限状态机中，是允许状态转移上被标记为空串的，我们将这样的状态转移称之为 <span class="math">\(\varepsilon\)</span>-转移。这就意味着不必要读入一个字符也可完成一次状态转移。那么如果到达了一个 <span class="math">\(\varepsilon\)</span>转移的原状态，那么不用读取就可以立即完成跳转，这样也是可以看做是读入了一个空串。事实上，<span class="math">\(\varepsilon\)</span> 转移通常用来简化这种非确定的有限状态自己懂的构造，但是总是存在一个与之等价的不含 <span class="math">\(\varepsilon\)</span> 转移的自动机。</p>
 <p>但是总而言之，不管是在确定性还是非确定性的有限状态自动机中，如果将从 <span class="math">\(s\)</span> 到某一个状态的 <span class="math">\(s_0\)</span> 的路径上标记穿起来可以得到字符串 <span class="math">\(x\)</span>，那么就说，读入 <span class="math">\(x\)</span> 后的状态 <span class="math">\(s_0\)</span> 是一个活动状态。在任何时候，确定性的有限状态自动机中，最多只有一个活动状态，而非确定性的则可能存在多个。</p>
 <p>上图表示两个自动机中的状态转移不会构成环，这样的自动机不论确定性与否，都被称之为无环的下图两个的自动机则是有环的，一个有环的自动机可以接受的状态集合可能是无限的。</p>
+<p><img alt="test" src="../images/automaton2.jpg" /></p>
+<p>例如上图中的有环自动机，左图可以识别 <span class="math">\(P=\{dab\}\)</span>, 也可以识别 <span class="math">\(P=\{dab, dabaab, dabaabaab,…\}\)</span>。</p>
 <h2>基于后缀的多字符串匹配</h2>
 <p>穿插着了解了前缀树和自动机之后，我们回到上文继续讨论基于后缀的多字符串匹配问题，我们这里主要的思想是对使用后缀匹配思想单字符串的匹配算法的扩展。这样的第一个算法对 BM 的扩展， Commentz-Walter，当然也有对 Hospool 的扩展，下面我们逐一讨论。</p>
 <h3>Commentz-Walter</h3>
@@ -189,8 +198,9 @@ d_2[q]
 <p>CW 算法的时间复杂度为 <span class="math">\(O(n \times l_{max})\)</span>，<span class="math">\(d_1,d_2,d_3\)</span>可以在 <span class="math">\(O(|P|)\)</span> 的时间内计算完成。</p>
 <h3>Set Horspool</h3>
 <p>Set Horspool （下称 SH）是对单字符串的 Horspool 算法扩展，它也可以看作是 CW 算法的简化。</p>
-<p>SH 算法的基本流程如图，假设当前文本位置 <span class="math">\(pos\)</span> 初始化为 <span class="math">\(l_{min}\)</span>，从 <span class="math">\(pos\)</span> 开始，从后向前读入文本字符。这里使用所有模式串反转 <span class="math">\(p_{rv}\)</span> 构建的前缀树来完成识别过程，如果到达状态 <span class="math">\(s_0\)</span> 恰好属于可以接受的结束状态，就标记下一个匹配，假设当无法继续识别读入的文本字符，就根据第一个读入的文本字符 <span class="math">\(\beta\)</span> 来决定 <span class="math">\(pos\)</span> 的移动。<span class="math">\(pos\)</span> 移动到使得 <span class="math">\(\beta\)</span> 与它在前缀树中下一次出现位置对齐的地方。一个显然的特例是，如果 <span class="math">\(\beta\)</span> 不再重复出现，那么就直接移动 <span class="math">\(l_{min}\)</span> 即可。</p>
-<p>下面简述 SH 算法的流程：</p>
+<p>SH 算法的基本流程如图，假设当前文本位置 <span class="math">\(pos\)</span> 初始化为 <span class="math">\(l_{min}\)</span>，从 <span class="math">\(pos\)</span> 开始，从后向前读入文本字符。这里使用所有模式串反转 <span class="math">\(p_{rv}\)</span> 构建的前缀树来完成识别过程，如果到达状态 <span class="math">\(s_0\)</span> 恰好属于可以接受的结束状态，就标记下一个匹配，假设当无法继续识别读入的文本字符，就根据第一个读入的文本字符 <span class="math">\(\beta\)</span> 来决定 <span class="math">\(pos\)</span> 的移动。<span class="math">\(pos\)</span> 移动到使得 <span class="math">\(\beta\)</span> 与它在前缀树中下一次出现位置对齐的地方。一个显然的特例是，如果 <span class="math">\(\beta\)</span> 不再重复出现，那么就直接移动 <span class="math">\(l_{min}\)</span> 即可。
+<img alt="test" src="../images/bm7.jpg" />
+下面简述 SH 算法的流程：</p>
 <hr />
 <p><strong>输入</strong>：模式串集 <span class="math">\(P = \{p_1,p_2,…,p_r\}\)</span>，目标文本 <span class="math">\(T=t_1t_2…t_n\)</span>；</p>
 <p><strong>输出</strong>：窗口指针位置 <span class="math">\(pos\)</span>；</p>
@@ -201,7 +211,7 @@ d_2[q]
 </li>
 <li>初始化当前指针位置，<span class="math">\(pos \leftarrow l_{min}\)</span>，检查 <span class="math">\(pos \leqslant n\)</span>，如果是，<span class="math">\(j \leftarrow 0\)</span>，也即从 <span class="math">\(HO\)</span> 中拿到它的初始状态，然后跳转到 3，如果不是，跳转到 6；</li>
 <li>检查如果 <span class="math">\(pos - j &gt; 0\)</span> 且 <span class="math">\(\delta_{HO}(t_{pos-j}, Current)\neq\theta\)</span>，跳转到 4，如果不是，跳转到 6；</li>
-<li>检查 <span class="math">\(Current\)</span> 是否是可以被接受的终止状态，如果是则记录下 $\mathcal{F}(Current, pos)，如果不是，跳转到 5；</li>
+<li>检查 <span class="math">\(Current\)</span> 是否是可以被接受的终止状态，如果是则记录下 <span class="math">\(\mathcal{F}(Current, pos)\)</span>，如果不是，跳转到 5；</li>
 <li>执行状态转移 <span class="math">\(Current \leftarrow \delta_{HO}(t_{pos-j}, Current)\)</span>，同时 <span class="math">\(j \leftarrow j+1\)</span>；</li>
 <li>位置指针转移 <span class="math">\(pos \leftarrow pos + d[t_{pos}]\)</span>；</li>
 </ol>
@@ -233,12 +243,21 @@ d_2[q]
 <p>下面我们继续介绍对于动名词组合的情况的思考与实践：</p>
 <h2>动名词组合</h2>
 <p>如本文开头陈述，我们的排查范围除了固定的敏感词列表之外，还有一类动名词组合同样需要处理。不妨举例，动词<strong>购买</strong>和名词<strong>自制手枪</strong>都是可以独立出现，但是他们不能以组合的形式出现，例如出现<strong>购买自制手枪</strong>和<strong>购买一把自制手枪</strong>都应该被识别出来，而如果两者分别出现的问题距离很远，就不应该被误伤。显然这里的难点在于指定两者之间的距离究竟为多少。</p>
-<p>既然人工很难直接设定一个阈值来判定，我们不妨考虑机器学习思路，我们使用决策树算法来进行训练和分类预测，算法在<a href="">前文</a>有详述，不再重复，这里仅说明特征和思路。</p>
+<p>既然人工很难直接设定一个阈值来判定，我们不妨考虑机器学习思路，我们使用决策树算法来进行训练和分类预测，算法在<a href="http://guokr.github.io/decision-tree-in-anti-spam.html">前文</a>有详述，不再重复，这里仅说明特征和思路。</p>
 <p>对于训练集：
 </p>
 <div class="math">$$D = \{(x_1,y_1),(x_2,y_2),…,(x_N,y_N)\}$$</div>
 <p>这里向量 <span class="math">\(x_i = [x_{1i},x_{2i}]\)</span> 考虑目前只考虑两个最显而易见的维度：整个文章的长度，以及出现的动名词之间的最短距离。同样是二分类问题，所以 <span class="math">\(y\)</span> 将会在 <span class="math">\(0,1\)</span> 中取值。</p>
+<p>简单说明一下动名词之间的最短距离计算方法，依照前文的固定敏感词算法分别搜索
+</p>
+<div class="math">$$P_{action} = \{p_1,p_2,…,p_n\}, P_{noun} = \{p_1,p_2,…,p_m\}$$</div>
+<p>
+也就得到它们分别的位置列表：
+</p>
+<div class="math">$$pos_{action} = [a_1,a_2,…,a_n], pos_{noun} = [n_1,n_2,…,n_m]$$</div>
+<p>鉴于此处的列表长度相对非常短，<span class="math">\(O(n^2)\)</span> 遍历的时间复杂度可以接受，故不再赘述。</p>
 <h2>总结</h2>
+<p>虽然排查敏感词从功能上来说并不是一个十分艰巨的任务，但是我们还是对这个问题做了一个较为系统和深入的研究工作，以期从算法角度得到高效且优雅的解决方案。其中对于动名词组合的情形，我们采取决策树算法，就文本的总长度和动名词之间的最短距离作为输入特征，训练得到两者之间的触发距离。</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
