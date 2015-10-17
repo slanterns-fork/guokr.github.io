@@ -129,8 +129,8 @@
 <p>BM 的搜索时间复杂是 <span class="math">\(O(mn)\)</span>，总的来说还算不错，但是比较麻烦的地方在于需要计算 <span class="math">\(d_1, d_2, d_3\)</span>，下面介绍它的一个简化版本，也是它应用最多的一个版本，Horspool。</p>
 <h2>Horspool 算法</h2>
 <p>Horspool 相对于 BM 最大的简化的地方是使用了一个统计上的经验，即，在面对字母表的 <span class="math">\(\sum\)</span> 较大的时候，<span class="math">\(d_3\)</span> 总是有很大概率产生最大的移动距离。基于此，我们不妨就让 <span class="math">\(d_3\)</span> 能够产生更大的移动距离。</p>
-<p>不妨用下图来说明，对于每个移动的搜索窗口，Horspool 将窗口中文本字符串 <span class="math">\(T\)</span> 的最后一个字符（图中的 <span class="math">\(\theta\)</span>）和模式串 <span class="math">\(p\)</span> 的最后一个字符 <span class="math">\(p[-1]\)</span> 进行比较。如果它们相等，则需要进行验证。过程是首先在搜索窗口中从后向前对 <span class="math">\(T\)</span> 和 <span class="math">\(p\)</span> 进行比较，直到出现完全相等（匹配成功），或者第一个不匹配（图中 <span class="math">\(\alpha\)</span> 和 <span class="math">\(\beta\)</span>），然后，无论是否成功，窗口的下一个移动距离是依据 <span class="math">\(p\)</span> 中 <span class="math">\(\theta\)</span> 的位置：
-<img alt="test" src="../images/bm4.jpg" /></p>
+<p>不妨用下图来说明，对于每个移动的搜索窗口，Horspool 将窗口中文本字符串 <span class="math">\(T\)</span> 的最后一个字符（图中的 <span class="math">\(\theta\)</span>）和模式串 <span class="math">\(p\)</span> 的最后一个字符 <span class="math">\(p[-1]\)</span> 进行比较。如果它们相等，则需要进行验证。过程是首先在搜索窗口中从后向前对 <span class="math">\(T\)</span> 和 <span class="math">\(p\)</span> 进行比较，直到出现完全相等（匹配成功），或者第一个不匹配（图中 <span class="math">\(\alpha\)</span> 和 <span class="math">\(\beta\)</span>），然后，无论是否成功，窗口的下一个移动距离是依据 <span class="math">\(p\)</span> 中 <span class="math">\(\theta\)</span> 的位置：</p>
+<p><img alt="test" src="../images/bm4.jpg" /></p>
 <p>下面对算法整体的流程简述：</p>
 <hr />
 <p><strong>输入</strong>：模式串 <span class="math">\(p = p_1p_2…p_m\)</span>；目标文本 <span class="math">\(T = t_1t_2…t_n\)</span>；</p>
@@ -150,13 +150,13 @@
 <span class="math">\(p_i\)</span> 是定义在一个有限字母表 <span class="math">\(\sum\)</span> 上的字符串，<span class="math">\(p_i=p_{i1}p_{i2}...p_{im_i}\)</span>。记 <span class="math">\(|P|\)</span> 为 <span class="math">\(P\)</span> 中所有字符串长度之和，即 <span class="math">\(|P| = \sum_{i=1}^{r}|p^i|=\sum_{i=1}^{r}m_i\)</span>，同时 <span class="math">\(l_{min}\)</span> 和 <span class="math">\(l_{max}\)</span> 分别是 <span class="math">\(P\)</span> 中最短和最长模式串的长度，目标文本 <span class="math">\(T = t_1t_2…t_n\)</span>。</p>
 <p>注意 <span class="math">\(P\)</span> 中的少数字符串可能是集合中其他字符串的前后缀，例如<strong>涉枪涉爆</strong>类别中既有「枪弩」也有「气枪弩」，也就是说如果「枪弩」被匹配成功，显然「气枪弩」也是会被匹配出来。因此，模式串总的出现次数最大可能为 <span class="math">\(rn\)</span>。那么我们真正的目标实际上是所有满足 <span class="math">\(p_i=t_{j-|p_i|+1}…t_j\)</span> 的整数对 <span class="math">\((i,j)\)</span>。</p>
 <p>其实对于多字符串匹配的一个最简单的思路就是使用前面的单字符串匹配方法，遍历整个集合即可。但是这样会直接搜索的时间复杂度为 <span class="math">\(O(rn)\)</span>，以及还有数据预处理阶段的大量时间。显然这么做是笨拙的，也是低效的，我们下面对前面使用的单字符串匹配算法进行一定的扩展，以达到性能上的优化。</p>
-<p>虽然单字符串匹配问题中的三种思路都是可以扩展，但是对于我们的问题后缀搜索效率最高，故将我们的主要工作重心放在基于后缀的字符串匹配问题的扩展上。
-<img alt="test" src="../images/bm5.jpg" /></p>
+<p>虽然单字符串匹配问题中的三种思路都是可以扩展，但是对于我们的问题后缀搜索效率最高，故将我们的主要工作重心放在基于后缀的字符串匹配问题的扩展上。</p>
+<p><img alt="test" src="../images/bm5.jpg" /></p>
 <h3>Trie Tree</h3>
 <p>我们先介绍一种称之为前缀树的数据结构，或者叫字典树，trie tree，之所以要先介绍它首先是因为它能够帮助理解后面的推导与演算，还有一个重要的原因是前缀树在非常多的字符串问题中扮演了极其重要的角色。</p>
 <p>那我们就这个项目举例来看，假设集合 <span class="math">\(P = \{p_1,p_2,…,p_r\}\)</span> 对应的前缀树结构其实是一棵有向的有根树，每个从根节点开始到叶子节点结束的路径上的所有标号构成的字符串，都对应着集合 <span class="math">\(P\)</span> 中的某一个元素 <span class="math">\(p_i\)</span>，反过来，集合 <span class="math">\(P\)</span> 中的每一个元素也都对应着前缀树中的一条从 root 到叶子节点的路径。对于前缀树来说，倘若一个结点 <span class="math">\(q\)</span> 对应这一个 <span class="math">\(P\)</span> 中的某个元素，那我们我们就将它称之为可以接受的状态，函数 <span class="math">\(F(q)\)</span> 包含了 <span class="math">\(q\)</span> 所对应的集合 <span class="math">\(P\)</span> 中的所有字符串。</p>
-<p>下图就是一个简单例子，是 <span class="math">\(P = \{tee, tea, teacher\}\)</span> 所对应的 trie 结构。
-<img alt="test" src="../images/bm6.jpg" /></p>
+<p>下图就是一个简单例子，是 <span class="math">\(P = \{tee, tea, teacher\}\)</span> 所对应的 trie 结构。</p>
+<p><img alt="test" src="../images/bm6.jpg" /></p>
 <h3>自动机</h3>
 <p>在计算机科学中，自动机这个词其实意义很多。我们下面单就字符串匹配领域来说说自动机，照例，我们先给出一些定义。</p>
 <p>一个有限状态自动机 <span class="math">\(\mathcal{A}\)</span>，或者简称做自动机，一般是由：</p>
@@ -198,9 +198,9 @@ d_2[q]
 <p>CW 算法的时间复杂度为 <span class="math">\(O(n \times l_{max})\)</span>，<span class="math">\(d_1,d_2,d_3\)</span>可以在 <span class="math">\(O(|P|)\)</span> 的时间内计算完成。</p>
 <h3>Set Horspool</h3>
 <p>Set Horspool （下称 SH）是对单字符串的 Horspool 算法扩展，它也可以看作是 CW 算法的简化。</p>
-<p>SH 算法的基本流程如图，假设当前文本位置 <span class="math">\(pos\)</span> 初始化为 <span class="math">\(l_{min}\)</span>，从 <span class="math">\(pos\)</span> 开始，从后向前读入文本字符。这里使用所有模式串反转 <span class="math">\(p_{rv}\)</span> 构建的前缀树来完成识别过程，如果到达状态 <span class="math">\(s_0\)</span> 恰好属于可以接受的结束状态，就标记下一个匹配，假设当无法继续识别读入的文本字符，就根据第一个读入的文本字符 <span class="math">\(\beta\)</span> 来决定 <span class="math">\(pos\)</span> 的移动。<span class="math">\(pos\)</span> 移动到使得 <span class="math">\(\beta\)</span> 与它在前缀树中下一次出现位置对齐的地方。一个显然的特例是，如果 <span class="math">\(\beta\)</span> 不再重复出现，那么就直接移动 <span class="math">\(l_{min}\)</span> 即可。
-<img alt="test" src="../images/bm7.jpg" />
-下面简述 SH 算法的流程：</p>
+<p>SH 算法的基本流程如图，假设当前文本位置 <span class="math">\(pos\)</span> 初始化为 <span class="math">\(l_{min}\)</span>，从 <span class="math">\(pos\)</span> 开始，从后向前读入文本字符。这里使用所有模式串反转 <span class="math">\(p_{rv}\)</span> 构建的前缀树来完成识别过程，如果到达状态 <span class="math">\(s_0\)</span> 恰好属于可以接受的结束状态，就标记下一个匹配，假设当无法继续识别读入的文本字符，就根据第一个读入的文本字符 <span class="math">\(\beta\)</span> 来决定 <span class="math">\(pos\)</span> 的移动。<span class="math">\(pos\)</span> 移动到使得 <span class="math">\(\beta\)</span> 与它在前缀树中下一次出现位置对齐的地方。一个显然的特例是，如果 <span class="math">\(\beta\)</span> 不再重复出现，那么就直接移动 <span class="math">\(l_{min}\)</span> 即可。</p>
+<p><img alt="test" src="../images/bm7.jpg" /></p>
+<p>下面简述 SH 算法的流程：</p>
 <hr />
 <p><strong>输入</strong>：模式串集 <span class="math">\(P = \{p_1,p_2,…,p_r\}\)</span>，目标文本 <span class="math">\(T=t_1t_2…t_n\)</span>；</p>
 <p><strong>输出</strong>：窗口指针位置 <span class="math">\(pos\)</span>；</p>
